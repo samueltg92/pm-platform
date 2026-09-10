@@ -60,6 +60,14 @@ Variables de entorno:
 
 Asigna el dominio y deja que Easypanel emita el certificado.
 
+> Si el dominio pasa por Cloudflare, el registro debe estar en **DNS only** (nube gris)
+> mientras se emite el certificado: con el proxy activado, el reto de Let's Encrypt no
+> llega al contenedor y la emisión falla sin decir por qué.
+
+**Cambiar de dominio toca tres sitios, no uno**: `APP_URL` (de ahí salen los enlaces de
+los correos de recuperación y de las invitaciones) y las dos Request URL de Slack
+(Event Subscriptions e Interactivity), que hay que reverificar.
+
 ### 3. Migraciones
 
 **Se aplican solas al arrancar el contenedor.** Son idempotentes, así que un reinicio no

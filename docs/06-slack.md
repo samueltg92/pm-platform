@@ -104,7 +104,7 @@ Desde la app, en **Diagnóstico**, hay un botón para publicar la guía en el ca
 SLACK_BOT_TOKEN=xoxb-...
 SLACK_SIGNING_SECRET=...
 SLACK_CANAL=C01234567
-APP_URL=https://n8n-pm-app.hr3und.easypanel.host
+APP_URL=https://stgpm.org
 ```
 
 6. Despliega.
@@ -133,7 +133,7 @@ petición interceptada valdría para siempre.
 Lo primero, el diagnóstico. Abre en el navegador, con sesión iniciada:
 
 ```
-https://n8n-pm-app.hr3und.easypanel.host/api/slack/eventos
+https://stgpm.org/api/slack/eventos
 ```
 
 Devuelve qué variables están puestas (sin revelarlas), el canal, y qué proveedor de IA
