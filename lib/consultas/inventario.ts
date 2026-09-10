@@ -1,6 +1,6 @@
 import "server-only";
 import { sql, uno } from "../db";
-import type { EstadoRecurso, TipoContactoAgente } from "../dominio";
+import type { CategoriaStack, EstadoRecurso, TipoContactoAgente } from "../dominio";
 
 export type Ficha = {
   id: string;
@@ -67,6 +67,17 @@ export type Integracion = {
   notas: string | null;
 };
 
+export type Stack = {
+  id: string;
+  cliente_id: string;
+  categoria: CategoriaStack;
+  proveedor: string;
+  modelo: string | null;
+  version: string | null;
+  notas: string | null;
+  estado: EstadoRecurso;
+};
+
 export function fichaCliente(clienteId: string) {
   return uno<Ficha>("select * from ficha_proyecto where id = $1", [clienteId]);
 }
@@ -101,14 +112,31 @@ export function integracionesCliente(clienteId: string) {
   );
 }
 
+/**
+ * El stack por categoría, en el orden en que se recorre una llamada:
+ * entra audio (STT), se razona (LLM), se responde (TTS).
+ */
+export function stackCliente(clienteId: string) {
+  return sql<Stack>(
+    `select * from stack_item where cliente_id = $1
+     order by ${ORDEN_ESTADO},
+       array_position(
+         array['stt','llm','tts','vad','telefonia','sip','vector_db','infra']::categoria_stack[],
+         categoria),
+       proveedor`,
+    [clienteId],
+  );
+}
+
 /** Cuántas piezas de inventario tiene un cliente, para el contador de la pestaña. */
 export async function conteoInventario(clienteId: string) {
-  const fila = await uno<{ servidores: number; sip: number; integraciones: number }>(
+  const fila = await uno<{ servidores: number; sip: number; integraciones: number; stack: number }>(
     `select
        (select count(*) from servidor_app where cliente_id = $1)::int as servidores,
        (select count(*) from sip_trunk where cliente_id = $1)::int as sip,
-       (select count(*) from integracion_externa where cliente_id = $1)::int as integraciones`,
+       (select count(*) from integracion_externa where cliente_id = $1)::int as integraciones,
+       (select count(*) from stack_item where cliente_id = $1)::int as stack`,
     [clienteId],
   );
-  return fila ?? { servidores: 0, sip: 0, integraciones: 0 };
+  return fila ?? { servidores: 0, sip: 0, integraciones: 0, stack: 0 };
 }

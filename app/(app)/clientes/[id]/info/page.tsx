@@ -5,6 +5,7 @@ import {
   servidoresCliente,
   sipCliente,
   integracionesCliente,
+  stackCliente,
 } from "@/lib/consultas/inventario";
 import { lineaBaseCliente } from "@/lib/consultas/lineaBase";
 import { resumenMensual } from "@/lib/consultas/metricas";
@@ -17,6 +18,8 @@ import {
   borrarSip,
   guardarIntegracion,
   borrarIntegracion,
+  guardarStack,
+  borrarStack,
 } from "@/app/acciones";
 import Inventario, {
   type CampoInventario,
@@ -30,6 +33,8 @@ import {
   ETIQUETA_FASE,
   TIPOS_CONTACTO_AGENTE,
   ETIQUETA_CONTACT_TYPE,
+  CATEGORIAS_STACK,
+  ETIQUETA_STACK,
 } from "@/lib/dominio";
 import { sesionActual } from "@/lib/auth";
 import { puedeEditar as rolPuedeEditar } from "@/lib/roles";
@@ -76,6 +81,23 @@ const CAMPOS_SIP: CampoInventario[] = [
   { nombre: "notas", etiqueta: "Notas", ancho: 3, multilinea: true },
 ];
 
+/**
+ * Qué modelo escucha, cuál razona y cuál habla. Sale de la plataforma de bots,
+ * y es lo primero que se pregunta cuando una llamada suena mal.
+ */
+const CAMPOS_STACK: CampoInventario[] = [
+  {
+    nombre: "categoria",
+    etiqueta: "Categoría",
+    requerido: true,
+    opciones: CATEGORIAS_STACK.map((c) => ({ valor: c, etiqueta: ETIQUETA_STACK[c] })),
+  },
+  { nombre: "proveedor", etiqueta: "Proveedor", requerido: true, placeholder: "OpenAI" },
+  { nombre: "modelo", etiqueta: "Modelo o voz", placeholder: "gpt-4.1" },
+  { nombre: "version", etiqueta: "Versión" },
+  { nombre: "notas", etiqueta: "Notas", ancho: 3, multilinea: true },
+];
+
 const CAMPOS_INTEGRACION: CampoInventario[] = [
   { nombre: "sistema", etiqueta: "Sistema", ancho: 2, requerido: true, placeholder: "SFTP, CRM…" },
   { nombre: "tipo", etiqueta: "Tipo", placeholder: "REST API" },
@@ -114,13 +136,14 @@ export default async function InfoProyecto({
   const sesion = await sesionActual();
   const editable = sesion ? rolPuedeEditar(sesion.rol) : false;
 
-  const [cliente, ficha, servidores, sips, integraciones, base, meses, contactos] =
+  const [cliente, ficha, servidores, sips, integraciones, stack, base, meses, contactos] =
     await Promise.all([
       obtenerCliente(id),
       fichaCliente(id),
       servidoresCliente(id),
       sipCliente(id),
       integracionesCliente(id),
+      stackCliente(id),
       lineaBaseCliente(id),
       resumenMensual(id, 1),
       contactosCliente(id),
@@ -261,6 +284,21 @@ export default async function InfoProyecto({
       </section>
 
       {/* -------------------------------------------------------- inventario */}
+      <Inventario
+        titulo="Stack de voz"
+        descripcion="Qué modelo escucha, cuál razona y cuál habla."
+        etiquetaAlta="Añadir pieza"
+        vacio="Sin stack registrado."
+        campos={CAMPOS_STACK}
+        titular={["proveedor"]}
+        items={stack as unknown as ItemInventario[]}
+        clienteId={id}
+        guardar={guardarStack}
+        borrar={borrarStack}
+        puedeEditar={editable}
+        t={t}
+      />
+
       <Inventario
         titulo="Servidores de aplicación"
         descripcion="Qué habla con qué, por qué puerto y hacia dónde."

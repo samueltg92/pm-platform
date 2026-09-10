@@ -473,4 +473,16 @@ export const EN: Record<string, string> = {
   "Repítela": "Repeat it",
   "Guardar y entrar": "Save and sign in",
   "Al guardarla se cerrarán las demás sesiones abiertas de tu cuenta.": "Saving it will sign out your account's other open sessions.",
+  // Stack de voz
+  "Stack de voz": "Voice stack",
+  "Qué modelo escucha, cuál razona y cuál habla.": "Which model listens, which reasons, which speaks.",
+  "Añadir pieza": "Add component",
+  "Sin stack registrado.": "No stack recorded.",
+  "Categoría": "Category",
+  "Proveedor": "Provider",
+  "Modelo o voz": "Model or voice",
+  "Versión": "Version",
+  "Base vectorial": "Vector database",
+  "Telefonía": "Telephony",
+  "Infraestructura": "Infrastructure",
 };

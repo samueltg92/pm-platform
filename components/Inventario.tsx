@@ -25,6 +25,8 @@ export type CampoInventario = {
   multilinea?: boolean;
   placeholder?: string;
   requerido?: boolean;
+  /** Cuando el valor es de un juego cerrado, se elige en vez de escribirse. */
+  opciones?: { valor: string; etiqueta: string }[];
 };
 
 export type ItemInventario = {
@@ -78,7 +80,21 @@ function Campos({
       {campos.map((c) => (
         <div key={c.nombre} className={anchoClase(c.ancho)}>
           <label className="etiqueta">{t(c.etiqueta)}</label>
-          {c.multilinea ? (
+          {c.opciones ? (
+            <select
+              name={c.nombre}
+              className="campo"
+              required={c.requerido}
+              defaultValue={item ? valor(item, c.nombre) : ""}
+            >
+              {!c.requerido && <option value="">—</option>}
+              {c.opciones.map((o) => (
+                <option key={o.valor} value={o.valor}>
+                  {t(o.etiqueta)}
+                </option>
+              ))}
+            </select>
+          ) : c.multilinea ? (
             <textarea
               name={c.nombre}
               rows={2}
@@ -217,7 +233,17 @@ export default function Inventario({
                   <dl className="grid sm:grid-cols-3 gap-x-4 gap-y-2.5">
                     {llenos.map((c) => (
                       <div key={c.nombre} className={anchoClase(c.ancho)}>
-                        <Dato etiqueta={t(c.etiqueta)} texto={valor(item, c.nombre)} />
+                        <Dato
+                          etiqueta={t(c.etiqueta)}
+                          texto={
+                            c.opciones
+                              ? t(
+                                  c.opciones.find((o) => o.valor === valor(item, c.nombre))
+                                    ?.etiqueta ?? valor(item, c.nombre),
+                                )
+                              : valor(item, c.nombre)
+                          }
+                        />
                       </div>
                     ))}
                   </dl>

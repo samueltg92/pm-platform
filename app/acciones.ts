@@ -1148,6 +1148,9 @@ const COLUMNAS_INVENTARIO = {
     "trunk_name", "did", "vdn_desborde", "sbc", "tp_ip", "agent_ip", "puerto",
     "transporte", "codec", "transfer_destino", "notas",
   ],
+  stack_item: [
+    "categoria", "proveedor", "modelo", "version", "notas",
+  ],
   integracion_externa: [
     "sistema", "tipo", "usuario", "metodo", "autenticacion", "puerto",
     "ambiente", "criticidad", "owner", "notas",
@@ -1211,6 +1214,13 @@ export async function guardarIntegracion(datos: FormData) {
 }
 export async function borrarIntegracion(datos: FormData) {
   await borrarFila("integracion_externa", datos);
+}
+
+export async function guardarStack(datos: FormData) {
+  await guardarFila("stack_item", datos);
+}
+export async function borrarStack(datos: FormData) {
+  await borrarFila("stack_item", datos);
 }
 
 export async function guardarFicha(datos: FormData) {
