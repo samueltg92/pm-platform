@@ -21,6 +21,7 @@ import {
   guardarIdioma,
 } from "@/lib/preferencias";
 import { aSegundos } from "@/lib/aht";
+import { correoConfigurado, enviarCorreo, correoRecuperacion } from "@/lib/correo";
 import {
   LIMITE_BYTES,
   MAX_ARCHIVOS_POR_SUBIDA,
@@ -1255,4 +1256,164 @@ export async function guardarFicha(datos: FormData) {
   );
 
   revalidatePath(`/clientes/${clienteId}/info`);
+}
+
+// -------------------------------------------------- recuperar la contraseña
+
+/** Una hora. Un reset se usa al recibirlo; lo que sobra es ventana de ataque. */
+const MINUTOS_RESET = 60;
+
+/** Peticiones por cuenta y hora, para que el buzón de alguien no sea un arma. */
+const MAX_PETICIONES_POR_HORA = 3;
+
+export type ResultadoReset = { ok: boolean; mensaje: string } | null;
+
+/**
+ * Pide un enlace de recuperación.
+ *
+ * La respuesta es **siempre la misma**, exista o no la cuenta: si dijera "ese
+ * email no está registrado", cualquiera podría usar este formulario para
+ * averiguar quién tiene cuenta. Los fallos reales de envío se registran en el
+ * servidor, donde los ve quien opera y no quien pregunta.
+ */
+export async function solicitarReset(
+  _previo: ResultadoReset,
+  datos: FormData,
+): Promise<ResultadoReset> {
+  const generico =
+    "Si hay una cuenta con ese correo, te acabamos de enviar un enlace. Revisa tu bandeja y la carpeta de spam.";
+
+  // Que falte la configuración no depende del email que escriban, así que
+  // decirlo no filtra nada — y calla el "revisa tu bandeja" que sería mentira.
+  if (!correoConfigurado()) {
+    return {
+      ok: false,
+      mensaje:
+        "El envío de correo no está configurado todavía. Avisa a quien administra la plataforma.",
+    };
+  }
+
+  const email = campo(datos, "email").trim().toLowerCase();
+  if (!z.email().safeParse(email).success) {
+    return { ok: false, mensaje: "Ese correo no es válido." };
+  }
+
+  const usuario = await uno<{ id: string; email: string; nombre: string }>(
+    "select id, email, nombre from usuario where email = $1 and activo",
+    [email],
+  );
+
+  if (usuario) {
+    const [{ recientes }] = await sql<{ recientes: number }>(
+      `select count(*)::int as recientes from reset_password
+       where usuario_id = $1 and creada_en > now() - interval '1 hour'`,
+      [usuario.id],
+    );
+
+    if (recientes >= MAX_PETICIONES_POR_HORA) {
+      // Se corta en silencio: decir "demasiados intentos" confirmaría que la
+      // cuenta existe, que es justo lo que el mensaje genérico oculta.
+      console.warn(`[reset] límite por hora alcanzado para ${usuario.email}`);
+      return { ok: true, mensaje: generico };
+    }
+
+    const token = randomBytes(32).toString("base64url");
+    const hash = createHash("sha256").update(token).digest("hex");
+
+    await enTransaccion(async (q) => {
+      // Pedir uno nuevo invalida los anteriores: si no, el enlace de un correo
+      // viejo seguiría sirviendo tanto como el recién pedido.
+      await q(
+        "update reset_password set usada_en = now() where usuario_id = $1 and usada_en is null",
+        [usuario.id],
+      );
+      await q(
+        `insert into reset_password (usuario_id, token_hash, expira_en)
+         values ($1, $2, now() + make_interval(mins => $3))`,
+        [usuario.id, hash, MINUTOS_RESET],
+      );
+    });
+
+    const base = process.env.APP_URL?.replace(/\/$/, "") ?? "";
+    const { asunto, html, texto } = correoRecuperacion(
+      `${base}/restablecer/${token}`,
+      MINUTOS_RESET,
+    );
+
+    const envio = await enviarCorreo({ para: usuario.email, asunto, html, texto });
+    if (!envio.ok) {
+      console.error(`[reset] no se pudo enviar a ${usuario.email}: ${envio.error}`);
+    }
+  }
+
+  return { ok: true, mensaje: generico };
+}
+
+/** Devuelve el usuario si el token sirve; null si no. No consume el token. */
+export async function usuarioDeTokenReset(token: string) {
+  if (!token) return null;
+  const hash = createHash("sha256").update(token).digest("hex");
+  return uno<{ id: string; email: string; nombre: string }>(
+    `select u.id, u.email, u.nombre
+     from reset_password r
+     join usuario u on u.id = r.usuario_id
+     where r.token_hash = $1 and r.usada_en is null and r.expira_en > now() and u.activo`,
+    [hash],
+  );
+}
+
+export async function restablecerPassword(datos: FormData) {
+  const token = campo(datos, "token");
+  const nueva = campo(datos, "password");
+  const repetir = campo(datos, "repetir");
+
+  if (nueva.length < 10) {
+    throw new Error("La contraseña debe tener al menos 10 caracteres");
+  }
+  if (nueva !== repetir) {
+    throw new Error("Las contraseñas no coinciden");
+  }
+
+  const hashToken = createHash("sha256").update(token).digest("hex");
+
+  const sesion = await enTransaccion(async (q) => {
+    // `for update` sobre la fila del token: dos envíos simultáneos del mismo
+    // formulario no pueden gastarlo dos veces.
+    const [fila] = await q<{ id: string; usuario_id: string }>(
+      `select r.id, r.usuario_id from reset_password r
+       join usuario u on u.id = r.usuario_id
+       where r.token_hash = $1 and r.usada_en is null and r.expira_en > now() and u.activo
+       for update of r`,
+      [hashToken],
+    );
+    if (!fila) throw new Error("Este enlace ya se usó o caducó. Pide otro desde el login.");
+
+    await q("update reset_password set usada_en = now() where id = $1", [fila.id]);
+
+    // `sesiones_desde` tumba las sesiones abiertas antes de ahora mismo. Si se
+    // restablece la clave porque alguien entró, esa sesión suya muere aquí.
+    const [usuario] = await q<{
+      id: string;
+      email: string;
+      nombre: string;
+      rol: string;
+    }>(
+      `update usuario
+         set password_hash = $2, sesiones_desde = now()
+       where id = $1
+       returning id, email, nombre, rol`,
+      [fila.usuario_id, await bcrypt.hash(nueva, 12)],
+    );
+
+    return usuario;
+  });
+
+  await crearSesion({
+    id: sesion.id,
+    email: sesion.email,
+    nombre: sesion.nombre,
+    rol: sesion.rol as never,
+  });
+
+  redirect("/");
 }

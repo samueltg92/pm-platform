@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const PUBLICAS = ["/login", "/api/slack", "/invitacion"];
+const PUBLICAS = ["/login", "/api/slack", "/invitacion", "/olvide", "/restablecer"];
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

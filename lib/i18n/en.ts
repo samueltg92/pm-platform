@@ -459,4 +459,18 @@ export const EN: Record<string, string> = {
   "Criticidad": "Criticality",
   "Owner": "Owner",
   "Datos de conexión y notas": "Connection details and notes",
+  // Recuperar contraseña
+  "Olvidé mi contraseña": "Forgot my password",
+  "Recuperar el acceso": "Recover access",
+  "Escribe tu correo y te enviamos un enlace para elegir una contraseña nueva.": "Enter your email and we'll send you a link to choose a new password.",
+  "Enviarme el enlace": "Send me the link",
+  "Enviando…": "Sending…",
+  "Volver al inicio de sesión": "Back to sign in",
+  "Enlace no válido": "Invalid link",
+  "Este enlace ya se usó, caducó o fue reemplazado por uno más reciente.": "This link was already used, expired, or was replaced by a newer one.",
+  "Pedir uno nuevo": "Request a new one",
+  "Elige una contraseña nueva": "Choose a new password",
+  "Repítela": "Repeat it",
+  "Guardar y entrar": "Save and sign in",
+  "Al guardarla se cerrarán las demás sesiones abiertas de tu cuenta.": "Saving it will sign out your account's other open sessions.",
 };

@@ -55,6 +55,8 @@ Variables de entorno:
 | `SESSION_SECRET` | cadena aleatoria de 32+ caracteres |
 | `TZ_APP` | `America/Bogota` |
 | `PM_EMAIL` / `PM_PASSWORD` / `PM_NOMBRE` | solo para la semilla inicial |
+| `RESEND_API_KEY` | clave de Resend, para el correo de recuperar contraseña |
+| `CORREO_DESDE` | remitente, en un dominio verificado en Resend |
 
 Asigna el dominio y deja que Easypanel emita el certificado.
 

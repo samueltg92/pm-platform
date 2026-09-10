@@ -249,6 +249,41 @@ Los campos se rellenan a mano desde la pestaña. La primera carga se hizo desde 
 la hoja no coinciden con los de la plataforma (`ARL-SAC` es `Sura SAC ARL`), así que la
 correspondencia es explícita y no adivinada.
 
+## Si te quedas fuera
+
+En el login hay **Olvidé mi contraseña**. Escribes tu correo y llega un enlace para
+elegir una nueva.
+
+Cuatro cosas que conviene saber:
+
+- **El enlace dura una hora y solo sirve una vez.** Pedir otro invalida el anterior, así
+  que si pides dos, solo vale el del último correo.
+- **Máximo tres peticiones por hora y cuenta**, para que nadie use el formulario para
+  llenarle el buzón a otro.
+- **La respuesta es siempre la misma**, exista la cuenta o no. Si dijera "ese correo no
+  está registrado", cualquiera podría averiguar quién tiene cuenta desde el login.
+- **Al guardar la contraseña nueva se cierran las demás sesiones** de esa cuenta. Si la
+  restableces porque alguien entró, su sesión muere ahí en vez de durarle treinta días.
+
+Necesita `RESEND_API_KEY` y `CORREO_DESDE` configuradas. Si faltan, la pantalla lo dice
+en lugar de prometer un correo que no va a llegar.
+
+### El plan de emergencia
+
+Si el correo no funciona y nadie puede entrar, desde la consola del contenedor:
+
+```bash
+node db/seed.mjs
+```
+
+Lee `PM_EMAIL` y `PM_PASSWORD` y **actualiza** la contraseña de esa cuenta. Ojo: si
+`PM_EMAIL` no coincide exactamente con un usuario existente, en vez de restablecer nada
+crea uno nuevo, y con rol *editor*.
+
+Esa semilla **no se ejecuta al desplegar** — el contenedor solo corre las migraciones y
+el servidor. Cambiar `PM_PASSWORD` en el panel y volver a desplegar no cambia ninguna
+contraseña.
+
 ## Sacar los datos
 
 En **Clientes**, el botón **Descargar todo** genera un ZIP con absolutamente todo lo

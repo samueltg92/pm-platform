@@ -70,6 +70,12 @@ export default async function Login({
           )}
 
           <button type="submit" className="boton w-full justify-center">{t("Entrar")}</button>
+
+          <a
+            href="/olvide"
+            className="text-xs block text-center"
+            style={{ color: "var(--texto-3)" }}
+          >{t("Olvidé mi contraseña")}</a>
         </form>
       </div>
     </main>

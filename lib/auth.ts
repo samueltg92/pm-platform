@@ -80,9 +80,11 @@ export const sesionActual = cache(async (): Promise<Sesion | null> => {
   if (!token) return null;
 
   let id: string;
+  let emitido: number;
   try {
     const { payload } = await jwtVerify(token, clave());
     id = String(payload.id);
+    emitido = Number(payload.iat ?? 0);
   } catch {
     return null;
   }
@@ -97,9 +99,23 @@ export const sesionActual = cache(async (): Promise<Sesion | null> => {
     nombre: string;
     rol: Rol;
     activo: boolean;
-  }>("select id, email, nombre, rol, activo from usuario where id = $1", [id]);
+    sesiones_desde: Date | null;
+  }>(
+    "select id, email, nombre, rol, activo, sesiones_desde from usuario where id = $1",
+    [id],
+  );
 
   if (!usuario || !usuario.activo) return null;
+
+  // Restablecer la contraseña sella la fecha y tumba las sesiones anteriores.
+  //
+  // `iat` va en segundos enteros, así que la marca se trunca al segundo antes
+  // de comparar. Sin truncar, un reset a las 10.500s invalidaría el token que
+  // él mismo acaba de emitir (iat 10) y dejaría fuera a quien acaba de entrar.
+  if (usuario.sesiones_desde) {
+    const desde = Math.floor(usuario.sesiones_desde.getTime() / 1000);
+    if (emitido < desde) return null;
+  }
 
   return {
     id: usuario.id,
