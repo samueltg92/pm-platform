@@ -16,6 +16,7 @@ type Contadores = {
   hitos: number;
   compromisos: number;
   contactos: number;
+  inventario: number;
 };
 
 export default async function ClienteLayout({
@@ -39,7 +40,13 @@ export default async function ClienteLayout({
           and estado in ('pendiente','en_curso'))::int as hitos,
        (select count(*) from compromiso where cliente_id = $1
           and estado = 'pendiente')::int as compromisos,
-       (select count(*) from contacto where cliente_id = $1)::int as contactos`,
+       (select count(*) from contacto where cliente_id = $1)::int as contactos,
+       (
+         (select count(*) from servidor_app where cliente_id = $1)
+         + (select count(*) from sip_trunk where cliente_id = $1)
+         + (select count(*) from integracion_externa where cliente_id = $1)
+         + (select count(*) from contacto where cliente_id = $1)
+       )::int as inventario`,
     [id],
   );
 
@@ -90,7 +97,11 @@ export default async function ClienteLayout({
             etiqueta: t("Compromisos"),
             contador: conteo.compromisos,
           },
-          { href: `${base}/contactos`, etiqueta: t("Contactos"), contador: conteo.contactos },
+          {
+            href: `${base}/info`,
+            etiqueta: t("Información"),
+            contador: conteo.inventario,
+          },
           { href: `${base}/ajustes`, etiqueta: t("Ajustes") },
         ]}
       />

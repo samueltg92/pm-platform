@@ -38,6 +38,8 @@ import {
   LADOS,
   ESTADOS_SEGUIMIENTO,
   ETIQUETA_FASE,
+  ESTADOS_RECURSO,
+  TIPOS_CONTACTO_AGENTE,
 } from "@/lib/dominio";
 
 const texto = z.string().trim().min(1);
@@ -1123,4 +1125,134 @@ export async function borrarContacto(datos: FormData) {
   const clienteId = z.uuid().parse(campo(datos, "cliente_id"));
   await sql("delete from contacto where id = $1", [id]);
   revalidatePath(`/clientes/${clienteId}`);
+}
+
+// ------------------------------------------------------------- inventario
+
+/**
+ * Las tablas de inventario son planas y todas se guardan igual: un puñado de
+ * campos de texto, un estado y un cliente. En vez de escribir seis acciones
+ * casi idénticas, se declara qué columnas tiene cada tabla y se generan.
+ *
+ * `id` vacío significa alta; con `id` es edición. Es el mismo formulario en los
+ * dos casos, así que distinguirlo aquí evita duplicar el modal.
+ */
+const COLUMNAS_INVENTARIO = {
+  servidor_app: [
+    "ambiente", "server_name", "app_origen", "host_origen", "ip_origen",
+    "tipo_comunicacion", "protocolo", "puerto", "destino", "app_destino",
+    "host_destino", "cloud_provider", "servicio", "owner_tecnico", "notas",
+  ],
+  sip_trunk: [
+    "trunk_name", "did", "vdn_desborde", "sbc", "tp_ip", "agent_ip", "puerto",
+    "transporte", "codec", "transfer_destino", "notas",
+  ],
+  integracion_externa: [
+    "sistema", "tipo", "usuario", "metodo", "autenticacion", "puerto",
+    "ambiente", "criticidad", "owner", "notas",
+  ],
+} as const;
+
+type TablaInventario = keyof typeof COLUMNAS_INVENTARIO;
+
+async function guardarFila(tabla: TablaInventario, datos: FormData) {
+  await exigirEditor();
+  const clienteId = z.uuid().parse(campo(datos, "cliente_id"));
+  const id = campo(datos, "id").trim();
+  const estado = z.enum(ESTADOS_RECURSO).parse(campo(datos, "estado") || "activo");
+  const columnas = COLUMNAS_INVENTARIO[tabla];
+  const valores = columnas.map((c) => opcional.parse(campo(datos, c)));
+
+  if (id) {
+    const asignaciones = columnas.map((c, i) => `${c} = $${i + 3}`).join(", ");
+    await sql(
+      `update ${tabla} set ${asignaciones}, estado = $${columnas.length + 3}
+       where id = $1 and cliente_id = $2`,
+      [z.uuid().parse(id), clienteId, ...valores, estado],
+    );
+  } else {
+    const huecos = columnas.map((_, i) => `$${i + 2}`).join(", ");
+    await sql(
+      `insert into ${tabla} (cliente_id, ${columnas.join(", ")}, estado)
+       values ($1, ${huecos}, $${columnas.length + 2})`,
+      [clienteId, ...valores, estado],
+    );
+  }
+
+  revalidatePath(`/clientes/${clienteId}/info`);
+}
+
+async function borrarFila(tabla: TablaInventario, datos: FormData) {
+  await exigirEditor();
+  const clienteId = z.uuid().parse(campo(datos, "cliente_id"));
+  const id = z.uuid().parse(campo(datos, "id"));
+
+  // El cliente va en el WHERE aunque el id ya sea único: así un id de otro
+  // proyecto no borra nada, en vez de borrar lo que no era.
+  await sql(`delete from ${tabla} where id = $1 and cliente_id = $2`, [id, clienteId]);
+  revalidatePath(`/clientes/${clienteId}/info`);
+}
+
+export async function guardarServidor(datos: FormData) {
+  await guardarFila("servidor_app", datos);
+}
+export async function borrarServidor(datos: FormData) {
+  await borrarFila("servidor_app", datos);
+}
+export async function guardarSip(datos: FormData) {
+  await guardarFila("sip_trunk", datos);
+}
+export async function borrarSip(datos: FormData) {
+  await borrarFila("sip_trunk", datos);
+}
+export async function guardarIntegracion(datos: FormData) {
+  await guardarFila("integracion_externa", datos);
+}
+export async function borrarIntegracion(datos: FormData) {
+  await borrarFila("integracion_externa", datos);
+}
+
+export async function guardarFicha(datos: FormData) {
+  await exigirEditor();
+  const clienteId = z.uuid().parse(campo(datos, "cliente_id"));
+  const v = z
+    .object({
+      codigo: opcional,
+      caso_uso: opcional,
+      proceso: opcional,
+      contact_type: z.enum(TIPOS_CONTACTO_AGENTE).nullable(),
+      ambiente: opcional,
+      pais: opcional,
+      observaciones: opcional,
+    })
+    .parse({
+      codigo: campo(datos, "codigo"),
+      caso_uso: campo(datos, "caso_uso"),
+      proceso: campo(datos, "proceso"),
+      contact_type: campo(datos, "contact_type") || null,
+      ambiente: campo(datos, "ambiente"),
+      pais: campo(datos, "pais"),
+      observaciones: campo(datos, "observaciones"),
+    });
+
+  await sql(
+    `insert into ficha_proyecto
+       (id, codigo, caso_uso, proceso, contact_type, ambiente, pais, observaciones)
+     values ($1, $2, $3, $4, $5, $6, $7, $8)
+     on conflict (id) do update set
+       codigo = excluded.codigo,
+       caso_uso = excluded.caso_uso,
+       proceso = excluded.proceso,
+       contact_type = excluded.contact_type,
+       ambiente = excluded.ambiente,
+       pais = excluded.pais,
+       observaciones = excluded.observaciones,
+       actualizado_en = now()`,
+    [
+      clienteId, v.codigo, v.caso_uso, v.proceso, v.contact_type,
+      v.ambiente, v.pais, v.observaciones,
+    ],
+  );
+
+  revalidatePath(`/clientes/${clienteId}/info`);
 }

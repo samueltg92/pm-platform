@@ -8,6 +8,12 @@ import { contactosCliente } from "../consultas/contactos";
 import { lineaBaseCliente } from "../consultas/lineaBase";
 import { resumenMensual } from "../consultas/metricas";
 import { adjuntosDe } from "../consultas/adjuntos";
+import {
+  fichaCliente as fichaInventario,
+  servidoresCliente,
+  sipCliente,
+  integracionesCliente,
+} from "../consultas/inventario";
 import { crearZip, type EntradaZip } from "../zip";
 import { mmss } from "../aht";
 import { aISO, fechaLarga, hoy, textoRelativo } from "../fechas";
@@ -22,6 +28,8 @@ import {
   ETIQUETA_LADO,
   ETIQUETA_SEGUIMIENTO,
   ETIQUETA_SEVERIDAD,
+  ETIQUETA_CONTACT_TYPE,
+  ETIQUETA_ESTADO_RECURSO,
 } from "../dominio";
 import {
   campo,
@@ -125,6 +133,13 @@ async function cargarCliente(clienteId: string) {
       cambiosDeFecha(clienteId),
     ]);
 
+  const [inventarioFicha, servidores, sips, integraciones] = await Promise.all([
+    fichaInventario(clienteId),
+    servidoresCliente(clienteId),
+    sipCliente(clienteId),
+    integracionesCliente(clienteId),
+  ]);
+
   const [actualizaciones, adjuntos] = await Promise.all([
     actualizacionesDe(eventos.map((e) => e.id)),
     adjuntosDe(eventos.map((e) => e.id)),
@@ -142,7 +157,25 @@ async function cargarCliente(clienteId: string) {
     cambios,
     actualizaciones,
     adjuntos,
+    inventarioFicha,
+    servidores,
+    sips,
+    integraciones,
   };
+}
+
+/** Pares etiqueta/valor, saltando los vacíos: en el inventario casi todo lo es. */
+function bloque(pares: [string, string | null | undefined][], sangria = 4): string[] {
+  return pares
+    .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "")
+    .map(([etiqueta, v]) => {
+      const valor = String(v);
+      // Un valor de varias líneas —seis rangos de IP, dos endpoints— se sangra
+      // debajo de su etiqueta en vez de aplastarse en una sola.
+      return valor.includes("\n")
+        ? `${" ".repeat(sangria)}${etiqueta}\n${envolver(valor, sangria + 4)}`
+        : `${" ".repeat(sangria)}${campo(etiqueta, valor)}`;
+    });
 }
 
 function fichaCliente(d: DatosCliente, carpetaAdjuntos: string | null): string {
@@ -167,6 +200,90 @@ function fichaCliente(d: DatosCliente, carpetaAdjuntos: string | null): string {
   if (c.descripcion) {
     partes.push("");
     partes.push(envolver(c.descripcion));
+  }
+
+  // ------------------------------------------------------------- inventario
+  const f = d.inventarioFicha;
+  if (f) {
+    partes.push(seccion("Ficha del proyecto"));
+    partes.push(...bloque([
+      ["Código", f.codigo],
+      ["Caso de uso", f.caso_uso],
+      ["Tipo de contacto", f.contact_type ? ETIQUETA_CONTACT_TYPE[f.contact_type] : null],
+      ["Ambiente", f.ambiente],
+      ["País o región", f.pais],
+    ], 0));
+    if (f.proceso) {
+      partes.push("");
+      partes.push(envolver(f.proceso));
+    }
+    if (f.observaciones) {
+      partes.push("");
+      partes.push(envolver(f.observaciones));
+    }
+  }
+
+  if (d.servidores.length > 0) {
+    partes.push(seccion(`Servidores de aplicación (${d.servidores.length})`));
+    for (const s of d.servidores) {
+      partes.push("");
+      partes.push(`${s.server_name ?? s.app_origen ?? "Servidor"}  [${ETIQUETA_ESTADO_RECURSO[s.estado]}]`);
+      partes.push(...bloque([
+        ["Ambiente", s.ambiente],
+        ["Nube / on-premise", s.cloud_provider],
+        ["Aplicación origen", s.app_origen],
+        ["Host origen", s.host_origen],
+        ["IP origen", s.ip_origen],
+        ["Comunicación", s.tipo_comunicacion],
+        ["Protocolo", s.protocolo],
+        ["Puerto", s.puerto],
+        ["Aplicación destino", s.app_destino],
+        ["Host destino", s.host_destino],
+        ["IP / URL destino", s.destino],
+        ["Endpoints", s.servicio],
+        ["Owner técnico", s.owner_tecnico],
+        ["Notas", s.notas],
+      ]));
+    }
+  }
+
+  if (d.sips.length > 0) {
+    partes.push(seccion(`Telefonía SIP (${d.sips.length})`));
+    for (const s of d.sips) {
+      partes.push("");
+      partes.push(`${s.trunk_name ?? s.sbc ?? "Trunk"}  [${ETIQUETA_ESTADO_RECURSO[s.estado]}]`);
+      partes.push(...bloque([
+        ["SBC", s.sbc],
+        ["DID", s.did],
+        ["VDN de desborde", s.vdn_desborde],
+        ["IP del partner", s.tp_ip],
+        ["IP del agente", s.agent_ip],
+        ["Puerto", s.puerto],
+        ["Transporte", s.transporte],
+        ["Códec", s.codec],
+        ["Transferencia", s.transfer_destino],
+        ["Notas", s.notas],
+      ]));
+    }
+  }
+
+  if (d.integraciones.length > 0) {
+    partes.push(seccion(`Integraciones externas (${d.integraciones.length})`));
+    for (const i of d.integraciones) {
+      partes.push("");
+      partes.push(`${i.sistema}  [${ETIQUETA_ESTADO_RECURSO[i.estado]}]`);
+      partes.push(...bloque([
+        ["Tipo", i.tipo],
+        ["Usuario o ruta", i.usuario],
+        ["Método", i.metodo],
+        ["Autenticación", i.autenticacion],
+        ["Puerto", i.puerto],
+        ["Ambiente", i.ambiente],
+        ["Criticidad", i.criticidad],
+        ["Owner", i.owner],
+        ["Notas", i.notas],
+      ]));
+    }
   }
 
   // ------------------------------------------------------------- línea base
@@ -852,6 +969,57 @@ export async function construirExport(): Promise<Export> {
               b.notas,
             ];
           }),
+      ),
+    ),
+  );
+
+  agregar(
+    "Datos/inventario-servidores.csv",
+    paraArchivo(
+      csv(
+        ["cliente", "server_name", "ambiente", "cloud_provider", "app_origen", "host_origen",
+         "ip_origen", "tipo_comunicacion", "protocolo", "puerto", "destino", "app_destino",
+         "host_destino", "servicio", "owner_tecnico", "estado", "notas"],
+        clientes.flatMap((c) =>
+          datos.get(c.id)!.servidores.map((s) => [
+            c.nombre, s.server_name, s.ambiente, s.cloud_provider, s.app_origen,
+            s.host_origen, s.ip_origen, s.tipo_comunicacion, s.protocolo, s.puerto,
+            s.destino, s.app_destino, s.host_destino, s.servicio, s.owner_tecnico,
+            s.estado, s.notas,
+          ]),
+        ),
+      ),
+    ),
+  );
+
+  agregar(
+    "Datos/inventario-sip.csv",
+    paraArchivo(
+      csv(
+        ["cliente", "trunk_name", "did", "vdn_desborde", "sbc", "tp_ip", "agent_ip",
+         "puerto", "transporte", "codec", "transfer_destino", "estado", "notas"],
+        clientes.flatMap((c) =>
+          datos.get(c.id)!.sips.map((s) => [
+            c.nombre, s.trunk_name, s.did, s.vdn_desborde, s.sbc, s.tp_ip, s.agent_ip,
+            s.puerto, s.transporte, s.codec, s.transfer_destino, s.estado, s.notas,
+          ]),
+        ),
+      ),
+    ),
+  );
+
+  agregar(
+    "Datos/inventario-integraciones.csv",
+    paraArchivo(
+      csv(
+        ["cliente", "sistema", "tipo", "usuario", "metodo", "autenticacion", "puerto",
+         "ambiente", "criticidad", "owner", "estado", "notas"],
+        clientes.flatMap((c) =>
+          datos.get(c.id)!.integraciones.map((i) => [
+            c.nombre, i.sistema, i.tipo, i.usuario, i.metodo, i.autenticacion, i.puerto,
+            i.ambiente, i.criticidad, i.owner, i.estado, i.notas,
+          ]),
+        ),
       ),
     ),
   );

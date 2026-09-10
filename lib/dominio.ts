@@ -240,3 +240,35 @@ export function colorSeguimiento(estado: EstadoSeguimiento): {
       return { fondo: "var(--superficie-2)", texto: "var(--texto-3)" };
   }
 }
+
+// ------------------------------------------------------------ inventario
+
+export const TIPOS_CONTACTO_AGENTE = ["inbound", "outbound", "ambos"] as const;
+export type TipoContactoAgente = (typeof TIPOS_CONTACTO_AGENTE)[number];
+
+export const ETIQUETA_CONTACT_TYPE: Record<TipoContactoAgente, string> = {
+  inbound: "Entrante",
+  outbound: "Saliente",
+  ambos: "Entrante y saliente",
+};
+
+export const ESTADOS_RECURSO = ["activo", "inactivo", "planeado"] as const;
+export type EstadoRecurso = (typeof ESTADOS_RECURSO)[number];
+
+export const ETIQUETA_ESTADO_RECURSO: Record<EstadoRecurso, string> = {
+  activo: "Activo",
+  inactivo: "Inactivo",
+  planeado: "Planeado",
+};
+
+/** Verde solo lo que está vivo: un recurso inactivo no debe parecer sano. */
+export function colorRecurso(estado: EstadoRecurso): { fondo: string; texto: string } {
+  switch (estado) {
+    case "activo":
+      return { fondo: "var(--acento-suave)", texto: "var(--acento)" };
+    case "planeado":
+      return { fondo: "var(--oportunidad-suave)", texto: "var(--oportunidad)" };
+    default:
+      return { fondo: "var(--superficie-2)", texto: "var(--texto-3)" };
+  }
+}

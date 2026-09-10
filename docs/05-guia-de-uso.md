@@ -212,6 +212,43 @@ Cuando alguien tiene varios correos registrados se muestran todos, marcados. Cas
 siempre es una ficha copiada con el buzón equivocado, y así se ve en lugar de quedar
 enterrada.
 
+## Información del proyecto
+
+Cada cliente tiene una pestaña **Información**: el sitio donde se *define* qué es el
+proyecto, frente a las demás pestañas, que registran lo que le va pasando.
+
+Reúne cuatro cosas:
+
+1. **La ficha** — código del inventario, caso de uso, tipo de contacto (entrante o
+   saliente), ambiente y país, más la descripción de qué hace el agente.
+2. **Métricas esperadas** — la línea base que entrega el partner. Estaba en Métricas;
+   se movió aquí porque es una definición, no una medición. La captura diaria y las
+   series siguen en Métricas.
+3. **El inventario técnico** — servidores de aplicación, telefonía SIP e integraciones
+   externas, con los campos del inventario que mantiene el partner: host, IP, protocolo,
+   puerto, tipo de comunicación, trunk, DID, SBC, códec, sistema integrado.
+4. **Contactos** — quién aprueba y quién bloquea. También estaba en su propia pestaña;
+   la ruta antigua redirige aquí. La agenda general de `/contactos` sigue existiendo
+   para la pregunta contraria: en qué proyectos está una persona.
+
+Cada pieza del inventario tiene un **estado** (activo, inactivo, planeado). Lo inactivo
+no desaparece —hace falta para entender un incidente viejo— pero baja al final de la
+lista.
+
+### Qué no se guarda aquí
+
+**Contraseñas, tokens ni claves.** La plataforma no cifra a nivel de columna: lo que se
+escriba en un campo de notas queda en claro para cualquiera con acceso a la base o al
+ZIP de descarga. Los campos son de identificación —host, puerto, usuario, endpoint—, que
+es lo que hace falta para diagnosticar. La credencial vive donde ya viva.
+
+### Cargar el inventario
+
+Los campos se rellenan a mano desde la pestaña. La primera carga se hizo desde el Excel
+`Inventario_Gestion_Agentes_Autonomos`, mapeando por nombre de proyecto: los nombres de
+la hoja no coinciden con los de la plataforma (`ARL-SAC` es `Sura SAC ARL`), así que la
+correspondencia es explícita y no adivinada.
+
 ## Sacar los datos
 
 En **Clientes**, el botón **Descargar todo** genera un ZIP con absolutamente todo lo
@@ -229,6 +266,8 @@ PM Platform 2026-08-31/
     timeline.csv                los mismos datos en CSV, para Excel o Sheets
     hitos.csv
     metricas-mensuales.csv
+    inventario-servidores.csv
+    inventario-sip.csv
     ...
   Adjuntos/
     Temas Generales/            los archivos subidos a los registros
@@ -248,7 +287,7 @@ incluido Lector, porque exportar es leer.
 
 - **Hoy** — la de la mañana.
 - **Clientes** — lista filtrable por fase, con semáforo de vencidos y próximo hito.
-- **Ficha de cliente** — registro rápido, timeline, hitos, compromisos, contactos, ajustes.
+- **Ficha de cliente** — registro rápido, timeline, métricas, hitos, compromisos, información y ajustes.
 - **Hitos** — todos los hitos abiertos y la estadística de movimientos.
 - **Compromisos** — todo lo pendiente, de todos los clientes.
 - **Contactos** — la agenda entera, con la etiqueta de cada proyecto.
