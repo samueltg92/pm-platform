@@ -6,6 +6,7 @@ import { Vacio } from "@/components/Seccion";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
+import { traducirFilas } from "@/lib/traduccion";
 export const dynamic = "force-dynamic";
 
 /**
@@ -21,7 +22,7 @@ export default async function Contactos() {
   const t = crearTraductor(idioma);
 
   const [filas, clientes] = await Promise.all([todosLosContactos(), clientesSidebar()]);
-  const personas = agruparContactos(filas);
+  const personas = agruparContactos(await traducirFilas(idioma, filas, ["rol"]));
 
   return (
     <>

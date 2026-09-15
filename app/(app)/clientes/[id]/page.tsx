@@ -14,11 +14,11 @@ import {
   colorEvento,
   colorSeguimiento,
 } from "@/lib/dominio";
-import { fechaCorta, textoRelativo, diasHasta } from "@/lib/fechas";
+import { diasHasta } from "@/lib/fechas";
 
-import { crearTraductor } from "@/lib/i18n";
+import { crearTraductor, type Traductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
-import { traducirFilas } from "@/lib/traduccion";
+import { traducirFilas, traducirFila } from "@/lib/traduccion";
 export const dynamic = "force-dynamic";
 
 function Dato({
@@ -49,25 +49,21 @@ function Dato({
   );
 }
 
-function miles(valor: string | null) {
-  if (valor === null) return "—";
-  return Number(valor).toLocaleString("es-CO", { maximumFractionDigits: 0 });
-}
 
-function variacion(actual: string | null, previo: string | null) {
+function variacion(actual: string | null, previo: string | null, t: Traductor) {
   if (actual === null || previo === null) return undefined;
   const a = Number(actual);
   const p = Number(previo);
   if (!Number.isFinite(a) || !Number.isFinite(p) || p === 0) return undefined;
   const d = ((a - p) / p) * 100;
-  return `${d > 0 ? "+" : ""}${d.toFixed(0)}% vs mes anterior`;
+  return `${d > 0 ? "+" : ""}${d.toFixed(0)}% ${t("vs mes anterior")}`;
 }
 
 export default async function Resumen({ params }: { params: Promise<{ id: string }> }) {
   const t = crearTraductor(await leerIdioma());
   const { id } = await params;
-  const cliente = await obtenerCliente(id);
-  if (!cliente) notFound();
+  const clienteOriginal = await obtenerCliente(id);
+  if (!clienteOriginal) notFound();
 
   const [eventos, hitos, compromisos, resumen] = await Promise.all([
     timelineCliente(id, 40),
@@ -77,6 +73,7 @@ export default async function Resumen({ params }: { params: Promise<{ id: string
   ]);
 
   const idioma = await leerIdioma();
+  const cliente = (await traducirFila(idioma, clienteOriginal, ["descripcion"]))!;
   const [eventosT, hitosT, compromisosT] = await Promise.all([
     traducirFilas(idioma, eventos, ["titulo", "cuerpo"]),
     traducirFilas(idioma, hitos, ["titulo", "notas"]),
@@ -103,13 +100,13 @@ export default async function Resumen({ params }: { params: Promise<{ id: string
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Dato
           etiqueta={t("Llamadas del mes")}
-          valor={miles(mes?.llamadas ?? null)}
-          pie={variacion(mes?.llamadas ?? null, previo?.llamadas ?? null)}
+          valor={t.numero(mes?.llamadas ?? null)}
+          pie={variacion(mes?.llamadas ?? null, previo?.llamadas ?? null, t)}
         />
         <Dato
           etiqueta={t("Minutos del mes")}
-          valor={miles(mes?.minutos ?? null)}
-          pie={variacion(mes?.minutos ?? null, previo?.minutos ?? null)}
+          valor={t.numero(mes?.minutos ?? null)}
+          pie={variacion(mes?.minutos ?? null, previo?.minutos ?? null, t)}
         />
         <Dato
           etiqueta={t("Contención")}
@@ -120,7 +117,7 @@ export default async function Resumen({ params }: { params: Promise<{ id: string
           }
           pie={
             mes?.duracion_promedio
-              ? `${Number(mes.duracion_promedio).toFixed(1)} min de media`
+              ? `${t.numero(mes.duracion_promedio, 1)} ${t("min de media")}`
               : undefined
           }
         />
@@ -128,7 +125,7 @@ export default async function Resumen({ params }: { params: Promise<{ id: string
           etiqueta={t("Asuntos abiertos")}
           valor={String(abiertos.length)}
           color={abiertos.length > 0 ? "var(--riesgo)" : undefined}
-          pie={vencidos.length > 0 ? `${vencidos.length} compromiso vencido` : undefined}
+          pie={vencidos.length > 0 ? `${vencidos.length} ${vencidos.length === 1 ? t("compromiso vencido") : t("compromisos vencidos")}` : undefined}
         />
       </div>
 
@@ -190,7 +187,7 @@ export default async function Resumen({ params }: { params: Promise<{ id: string
                       className="text-xs shrink-0"
                       style={{ color: vencido ? "var(--riesgo)" : "var(--texto-3)" }}
                     >
-                      {c.fecha_limite ? textoRelativo(c.fecha_limite) : "sin fecha"}
+                      {c.fecha_limite ? t.relativo(c.fecha_limite) : t("sin fecha")}
                     </span>
                   </div>
                 );
@@ -222,10 +219,10 @@ export default async function Resumen({ params }: { params: Promise<{ id: string
             </div>
             <div className="text-right shrink-0">
               <div className="text-sm font-medium">
-                {fechaCorta(proximoHito.fecha_objetivo)}
+                {t.fechaCorta(proximoHito.fecha_objetivo)}
               </div>
               <div className="text-xs" style={{ color: "var(--texto-3)" }}>
-                {textoRelativo(proximoHito.fecha_objetivo)}
+                {t.relativo(proximoHito.fecha_objetivo)}
               </div>
             </div>
           </div>

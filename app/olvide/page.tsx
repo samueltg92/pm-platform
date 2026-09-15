@@ -31,6 +31,13 @@ export default async function Olvide() {
             enviar: t("Enviarme el enlace"),
             enviando: t("Enviando…"),
             volver: t("Volver al inicio de sesión"),
+            mensajes: Object.fromEntries(
+              [
+                "Si hay una cuenta con ese correo, te acabamos de enviar un enlace. Revisa tu bandeja y la carpeta de spam.",
+                "El envío de correo no está configurado todavía. Avisa a quien administra la plataforma.",
+                "Ese correo no es válido.",
+              ].map((m) => [m, t(m)]),
+            ),
           }}
         />
       </div>

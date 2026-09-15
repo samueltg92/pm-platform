@@ -40,6 +40,8 @@ import { sesionActual } from "@/lib/auth";
 import { puedeEditar as rolPuedeEditar } from "@/lib/roles";
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
+import { traducirFilas, traducirFila } from "@/lib/traduccion";
+import { original } from "@/lib/original";
 
 export const dynamic = "force-dynamic";
 
@@ -130,13 +132,14 @@ export default async function InfoProyecto({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const t = crearTraductor(await leerIdioma());
+  const idioma = await leerIdioma();
+  const t = crearTraductor(idioma);
   const { id } = await params;
 
   const sesion = await sesionActual();
   const editable = sesion ? rolPuedeEditar(sesion.rol) : false;
 
-  const [cliente, ficha, servidores, sips, integraciones, stack, base, meses, contactos] =
+  const [cliente, fichaOriginal, servidoresO, sipsO, integracionesO, stackO, base, meses, contactosO] =
     await Promise.all([
       obtenerCliente(id),
       fichaCliente(id),
@@ -150,6 +153,17 @@ export default async function InfoProyecto({
     ]);
 
   if (!cliente) notFound();
+
+  // Todo lo que es prosa se pinta traducido; lo técnico (hosts, IPs, trunks,
+  // modelos) no se toca. Los formularios leen el original con `original()`.
+  const [ficha, servidores, sips, integraciones, stack, contactos] = await Promise.all([
+    traducirFila(idioma, fichaOriginal, ["caso_uso", "proceso", "observaciones"]),
+    traducirFilas(idioma, servidoresO, ["notas", "tipo_comunicacion"]),
+    traducirFilas(idioma, sipsO, ["notas"]),
+    traducirFilas(idioma, integracionesO, ["notas", "criticidad"]),
+    traducirFilas(idioma, stackO, ["notas"]),
+    traducirFilas(idioma, contactosO, ["rol", "notas"]),
+  ]);
 
   return (
     <>
@@ -183,7 +197,7 @@ export default async function InfoProyecto({
                       name="caso_uso"
                       className="campo"
                       placeholder={t("Servicio al cliente")}
-                      defaultValue={ficha?.caso_uso ?? ""}
+                      defaultValue={original(ficha, "caso_uso")}
                     />
                   </div>
                   <div>
@@ -220,7 +234,7 @@ export default async function InfoProyecto({
                       name="proceso"
                       rows={4}
                       className="campo"
-                      defaultValue={ficha?.proceso ?? ""}
+                      defaultValue={original(ficha, "proceso")}
                     />
                   </div>
                   <div className="sm:col-span-3">
@@ -229,7 +243,7 @@ export default async function InfoProyecto({
                       name="observaciones"
                       rows={2}
                       className="campo"
-                      defaultValue={ficha?.observaciones ?? ""}
+                      defaultValue={original(ficha, "observaciones")}
                     />
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import Pastilla from "./Pastilla";
 import BotonBorrar from "./BotonBorrar";
+import { original } from "@/lib/original";
 import Icono from "./Icono";
 import {
   actualizarEvento,
@@ -21,7 +22,7 @@ import {
   colorEvento,
   colorSeguimiento,
 } from "@/lib/dominio";
-import { fechaCorta, textoRelativo, aISO } from "@/lib/fechas";
+import { aISO } from "@/lib/fechas";
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
 import type { EventoFila, Actualizacion } from "@/lib/consultas/eventos";
@@ -70,7 +71,7 @@ export default async function EventoLinea({
 
       <header className="flex items-baseline gap-2 flex-wrap">
         <time className="num text-xs" style={{ color: "var(--texto-3)" }}>
-          {fechaCorta(evento.fecha_evento)}
+          {t.fechaCorta(evento.fecha_evento)}
         </time>
 
         <Pastilla fondo={color.fondo} texto={color.texto}>
@@ -202,7 +203,7 @@ export default async function EventoLinea({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <time className="num text-xs" style={{ color: "var(--texto-3)" }}>
-                            {textoRelativo(a.creado_en)}
+                            {t.relativo(a.creado_en)}
                           </time>
                           {a.estado_nuevo && (
                             <Pastilla
@@ -314,11 +315,11 @@ export default async function EventoLinea({
             <form action={editarEvento} className="space-y-2">
               <input type="hidden" name="id" value={evento.id} />
               <input type="hidden" name="cliente_id" value={evento.cliente_id} />
-              <input name="titulo" required defaultValue={evento.titulo} className="campo" />
+              <input name="titulo" required defaultValue={original(evento, "titulo")} className="campo" />
               <textarea
                 name="cuerpo"
                 rows={2}
-                defaultValue={evento.cuerpo ?? ""}
+                defaultValue={original(evento, "cuerpo")}
                 className="campo"
               />
               <div className="grid sm:grid-cols-[1fr_9rem_8rem_auto] gap-2 items-end">

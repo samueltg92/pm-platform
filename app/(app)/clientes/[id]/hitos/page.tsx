@@ -6,7 +6,7 @@ import { TIPOS_HITO, ETIQUETA_HITO } from "@/lib/dominio";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
-import { traducirFilas } from "@/lib/traduccion";
+import { traducirFilas, traducirAgrupado } from "@/lib/traduccion";
 import Modal, { FormularioModal } from "@/components/Modal";
 export const dynamic = "force-dynamic";
 
@@ -15,13 +15,14 @@ export default async function HitosCliente({ params }: { params: Promise<{ id: s
   const { id } = await params;
   const hitos = await traducirFilas(await leerIdioma(), await hitosCliente(id), ["titulo", "notas"]);
 
-  const historiales = Object.fromEntries(
+  const historialesOriginales = Object.fromEntries(
     await Promise.all(
       hitos
         .filter((h) => h.veces_movido > 0)
         .map(async (h) => [h.id, await historialFechas(h.id)] as const),
     ),
   );
+  const historiales = await traducirAgrupado(await leerIdioma(), historialesOriginales, ["motivo"]);
 
   return (
     <>

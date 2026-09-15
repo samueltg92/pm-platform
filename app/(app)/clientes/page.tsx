@@ -4,16 +4,12 @@ import Pastilla from "@/components/Pastilla";
 import BotonExportar from "@/components/BotonExportar";
 import { Vacio } from "@/components/Seccion";
 import { ETIQUETA_FASE, FASES, colorFase, type Fase } from "@/lib/dominio";
-import { fechaCorta, textoRelativo, diasHasta } from "@/lib/fechas";
+import { diasHasta } from "@/lib/fechas";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
+import { traducirFilas } from "@/lib/traduccion";
 export const dynamic = "force-dynamic";
-
-function miles(valor: string | null) {
-  if (valor === null) return "—";
-  return Number(valor).toLocaleString("es-CO", { maximumFractionDigits: 0 });
-}
 
 function Delta({ actual, previo }: { actual: string | null; previo: string | null }) {
   if (actual === null || previo === null) return null;
@@ -36,10 +32,13 @@ export default async function Clientes({
 }: {
   searchParams: Promise<{ fase?: string }>;
 }) {
-  const t = crearTraductor(await leerIdioma());
+  const idioma = await leerIdioma();
+  const t = crearTraductor(idioma);
   const { fase } = await searchParams;
   const faseFiltro = FASES.includes(fase as Fase) ? (fase as Fase) : undefined;
-  const clientes = await listarClientes({ fase: faseFiltro });
+  const clientes = await traducirFilas(idioma, await listarClientes({ fase: faseFiltro }), [
+    "proximo_hito_titulo",
+  ]);
 
   return (
     <>
@@ -48,7 +47,7 @@ export default async function Clientes({
           <p className="eyebrow mb-1">{t("Cartera")}</p>
           <h1 className="titulo-pagina">{t("Clientes")}</h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--texto-2)" }}>
-            {clientes.length} activo{clientes.length === 1 ? "" : "s"}
+            {clientes.length} {clientes.length === 1 ? t("activo") : t("activos")}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -85,7 +84,9 @@ export default async function Clientes({
 
       {clientes.length === 0 ? (
         <Vacio>
-          No hay clientes {faseFiltro ? `en fase ${t(ETIQUETA_FASE[faseFiltro])}` : "todavía"}.
+          {faseFiltro
+            ? `${t("No hay clientes en fase")} ${t(ETIQUETA_FASE[faseFiltro])}.`
+            : t("No hay clientes todavía.")}
         </Vacio>
       ) : (
         <div className="tarjeta overflow-x-auto">
@@ -121,7 +122,7 @@ export default async function Clientes({
                       </Pastilla>
                     </td>
                     <td className="derecha num whitespace-nowrap">
-                      {miles(c.llamadas_mes)}
+                      {t.numero(c.llamadas_mes)}
                       <Delta actual={c.llamadas_mes} previo={c.llamadas_mes_previo} />
                     </td>
                     <td>
@@ -134,7 +135,7 @@ export default async function Clientes({
                                 : "var(--texto-2)",
                           }}
                         >
-                          <span className="num">{fechaCorta(c.proximo_hito_fecha)}</span>
+                          <span className="num">{t.fechaCorta(c.proximo_hito_fecha)}</span>
                           <span className="text-xs ml-1.5" style={{ color: "var(--texto-3)" }}>
                             {c.proximo_hito_titulo}
                           </span>
@@ -153,7 +154,7 @@ export default async function Clientes({
                       )}
                     </td>
                     <td className="derecha num text-xs whitespace-nowrap" style={{ color: "var(--texto-3)" }}>
-                      {c.ultimo_evento ? textoRelativo(c.ultimo_evento) : "sin registros"}
+                      {c.ultimo_evento ? t.relativo(c.ultimo_evento) : t("sin registros")}
                     </td>
                   </tr>
                 );

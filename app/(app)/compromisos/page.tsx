@@ -5,7 +5,7 @@ import Pastilla from "@/components/Pastilla";
 import SelectEnvia from "@/components/SelectEnvia";
 import { Vacio } from "@/components/Seccion";
 import { ETIQUETA_LADO, ESTADOS_COMPROMISO, ETIQUETA_ESTADO_COMPROMISO } from "@/lib/dominio";
-import { textoRelativo, diasHasta, fechaCorta } from "@/lib/fechas";
+import { diasHasta } from "@/lib/fechas";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
@@ -33,7 +33,8 @@ export default async function Compromisos() {
         <p className="eyebrow mb-1">{t("Lo que alguien debe hacer")}</p>
         <h1 className="titulo-pagina">{t("Compromisos")}</h1>
         <p className="text-sm mt-0.5" style={{ color: "var(--texto-2)" }}>
-          {abiertos.length} abiertos · {vencidos.length} vencidos
+          {abiertos.length} {abiertos.length === 1 ? t("abierto") : t("abiertos")} · {vencidos.length}{" "}
+          {vencidos.length === 1 ? t("vencido") : t("vencidos")}
         </p>
       </div>
 
@@ -65,9 +66,9 @@ export default async function Compromisos() {
                 <span
                   className="text-xs shrink-0 w-24 text-right"
                   style={{ color: vencido ? "var(--riesgo)" : "var(--texto-3)" }}
-                  title={c.fecha_limite ? fechaCorta(c.fecha_limite) : undefined}
+                  title={c.fecha_limite ? t.fechaCorta(c.fecha_limite) : undefined}
                 >
-                  {c.fecha_limite ? textoRelativo(c.fecha_limite) : "sin fecha"}
+                  {c.fecha_limite ? t.relativo(c.fecha_limite) : t("sin fecha")}
                 </span>
 
                 <form action={cambiarEstadoCompromiso} className="shrink-0">
@@ -84,7 +85,7 @@ export default async function Compromisos() {
       {cerrados.length > 0 && (
         <details className="mt-4">
           <summary className="text-xs cursor-pointer select-none" style={{ color: "var(--texto-3)" }}>
-            {cerrados.length} cerrado{cerrados.length === 1 ? "" : "s"}
+            {cerrados.length} {cerrados.length === 1 ? t("cerrado") : t("cerrados")}
           </summary>
           <div className="tarjeta divide-y mt-2" style={{ borderColor: "var(--borde)" }}>
             {cerrados.map((c) => (

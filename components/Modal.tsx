@@ -158,6 +158,7 @@ export function FormularioModal({
 }) {
   const cerrar = useCerrarModal();
   const avisar = useAvisar();
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
   const [, setEnviando] = useState(false);
 
@@ -173,7 +174,7 @@ export function FormularioModal({
           if (confirmacion) avisar(confirmacion);
         } catch (e) {
           if (esRedireccion(e)) throw e;
-          setError(e instanceof Error ? e.message : "No se pudo guardar");
+          setError(e instanceof Error ? t(e.message) : t("No se pudo guardar"));
         } finally {
           setEnviando(false);
         }

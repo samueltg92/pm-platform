@@ -71,11 +71,11 @@ export default function CapturaMetricas({
 
     setAviso(
       [
-        reconocidos.length ? `Reconocidos: ${reconocidos.join(", ")}.` : null,
-        ignorados.length ? `Sin reconocer: ${ignorados.join(" · ")}.` : null,
+        reconocidos.length ? `${t("Reconocidos:")} ${reconocidos.join(", ")}.` : null,
+        ignorados.length ? `${t("Sin reconocer:")} ${ignorados.join(" · ")}.` : null,
       ]
         .filter(Boolean)
-        .join(" ") || "No se reconoció ninguna línea.",
+        .join(" ") || t("No se reconoció ninguna línea."),
     );
   }
 
@@ -89,7 +89,7 @@ export default function CapturaMetricas({
           setAviso(null);
           avisar(t("Día guardado"));
         } catch (e) {
-          setError(e instanceof Error ? e.message : "No se pudo guardar");
+          setError(e instanceof Error ? t(e.message) : t("No se pudo guardar"));
         } finally {
           setGuardando(false);
         }
@@ -112,8 +112,7 @@ export default function CapturaMetricas({
             onChange={(e) => setPegado(e.target.value)}
           />
           <p className="text-xs" style={{ color: "var(--texto-3)" }}>
-            Nombre, llamadas, minutos y contención. Separados por espacios, comas o
-            tabuladores — sirve pegar directo desde una hoja de cálculo.
+            {t("Nombre, llamadas, minutos y contención. Separados por espacios, comas o tabuladores — sirve pegar directo desde una hoja de cálculo.")}
           </p>
           <button type="button" onClick={interpretar} className="boton-suave">{t("Rellenar campos")}</button>
         </div>
@@ -200,7 +199,7 @@ export default function CapturaMetricas({
       )}
 
       <button type="submit" className="boton" disabled={guardando}>
-        {guardando ? "Guardando…" : "Guardar el día"}
+        {guardando ? t("Guardando…") : t("Guardar el día")}
       </button>
     </form>
   );

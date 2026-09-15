@@ -8,7 +8,7 @@ import { puedeAdministrar, puedeEditar } from "@/lib/roles";
 import { hoy } from "@/lib/fechas";
 
 import { crearTraductor } from "@/lib/i18n";
-import { leerIdioma } from "@/lib/preferencias";
+import { leerIdioma, leerTema } from "@/lib/preferencias";
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const clientes = await clientesSidebar();
   const idioma = await leerIdioma();
+  const tema = await leerTema();
 
   async function salir() {
     "use server";
@@ -32,6 +33,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       clientes={clientes}
       usuario={sesion.nombre}
       hoy={hoy()}
+      tema={tema}
+      idioma={idioma}
       esAdmin={puedeAdministrar(sesion.rol)}
       puedeRegistrar={puedeEditar(sesion.rol)}
       salir={

@@ -17,13 +17,6 @@ function nombreMes(periodo: string) {
   return `${MESES[Number(mes) - 1]} ${anio}`;
 }
 
-function num(valor: string | null, decimales = 0) {
-  if (valor === null) return "—";
-  return Number(valor).toLocaleString("es-CO", {
-    minimumFractionDigits: decimales,
-    maximumFractionDigits: decimales,
-  });
-}
 
 function delta(actual: string | null, previo: string | null) {
   if (actual === null || previo === null) return null;
@@ -62,6 +55,7 @@ export default async function ResumenMetricas({
   meses: MetricaMes[];
 }) {
   const t = crearTraductor(await leerIdioma());
+  const num = (valor: string | null, decimales = 0) => t.numero(valor, decimales);
   const periodoActual = inicioMes();
   const objetivoActual = objetivos.find((o) => aISO(o.periodo) === periodoActual);
 

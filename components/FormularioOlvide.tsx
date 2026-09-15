@@ -18,6 +18,8 @@ export default function FormularioOlvide({
     enviar: string;
     enviando: string;
     volver: string;
+    /** Los mensajes que devuelve el servidor, ya traducidos, por su texto original. */
+    mensajes: Record<string, string>;
   };
 }) {
   const [estado, enviar, pendiente] = useActionState<ResultadoReset, FormData>(
@@ -31,7 +33,7 @@ export default function FormularioOlvide({
     return (
       <div className="tarjeta p-6">
         <p className="text-sm" style={{ color: "var(--texto)" }}>
-          {estado.mensaje}
+          {textos.mensajes[estado.mensaje] ?? estado.mensaje}
         </p>
         <a
           href="/login"
@@ -63,7 +65,7 @@ export default function FormularioOlvide({
 
       {estado?.ok === false && (
         <p className="text-sm" style={{ color: "var(--riesgo)" }}>
-          {estado.mensaje}
+          {textos.mensajes[estado.mensaje] ?? estado.mensaje}
         </p>
       )}
 

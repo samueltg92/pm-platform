@@ -8,4 +8,9 @@ export async function register() {
 
   const { arrancarProgramador } = await import("./lib/slack/programador");
   arrancarProgramador();
+
+  // Va aparte del de Slack: aquel no hace nada si Slack no está configurado,
+  // y la traducción no debe depender de eso.
+  const { arrancarTraductor } = await import("./lib/traduccion");
+  arrancarTraductor();
 }

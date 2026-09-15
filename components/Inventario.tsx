@@ -3,6 +3,7 @@ import BotonBorrar from "./BotonBorrar";
 import Pastilla from "./Pastilla";
 import { Vacio } from "./Seccion";
 import type { Traductor } from "@/lib/i18n";
+import { original } from "@/lib/original";
 import {
   ESTADOS_RECURSO,
   ETIQUETA_ESTADO_RECURSO,
@@ -85,7 +86,7 @@ function Campos({
               name={c.nombre}
               className="campo"
               required={c.requerido}
-              defaultValue={item ? valor(item, c.nombre) : ""}
+              defaultValue={item ? original(item, c.nombre) : ""}
             >
               {!c.requerido && <option value="">—</option>}
               {c.opciones.map((o) => (
@@ -100,7 +101,7 @@ function Campos({
               rows={2}
               className="campo"
               placeholder={c.placeholder}
-              defaultValue={item ? valor(item, c.nombre) : ""}
+              defaultValue={item ? original(item, c.nombre) : ""}
             />
           ) : (
             <input
@@ -108,7 +109,7 @@ function Campos({
               className="campo"
               required={c.requerido}
               placeholder={c.placeholder}
-              defaultValue={item ? valor(item, c.nombre) : ""}
+              defaultValue={item ? original(item, c.nombre) : ""}
             />
           )}
         </div>

@@ -74,7 +74,7 @@ export default async function ClienteLayout({
             )}
             {conteo.abiertos > 0 && (
               <Pastilla fondo="var(--riesgo-suave)" texto="var(--riesgo)">
-                {conteo.abiertos} abierto{conteo.abiertos === 1 ? "" : "s"}
+                {conteo.abiertos} {conteo.abiertos === 1 ? t("abierto") : t("abiertos")}
               </Pastilla>
             )}
           </div>

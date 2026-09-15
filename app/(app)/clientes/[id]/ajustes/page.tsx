@@ -9,8 +9,6 @@ import {
   ETIQUETA_FASE,
   ETIQUETA_ESTADO_CLIENTE,
 } from "@/lib/dominio";
-import { fechaLarga } from "@/lib/fechas";
-
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
 export const dynamic = "force-dynamic";
@@ -103,8 +101,8 @@ export default async function AjustesCliente({
         </div>
 
         <p className="text-xs" style={{ color: "var(--texto-3)" }}>
-          Cambiar la fase deja un evento en el timeline automáticamente. Alta:{" "}
-          {fechaLarga(cliente.fecha_alta)}.
+          {t("Cambiar la fase deja un evento en el timeline automáticamente.")} {t("Alta:")}{" "}
+          {t.fechaLarga(cliente.fecha_alta)}.
         </p>
 
         <button type="submit" className="boton">{t("Guardar")}</button>
@@ -114,15 +112,15 @@ export default async function AjustesCliente({
         <input type="hidden" name="id" value={cliente.id} />
         <input type="hidden" name="archivar" value={cliente.archivado ? "0" : "1"} />
         <h2 className="text-sm font-semibold mb-1">
-          {cliente.archivado ? "Reactivar cliente" : "Archivar cliente"}
+          {cliente.archivado ? t("Reactivar cliente") : t("Archivar cliente")}
         </h2>
         <p className="text-xs mb-3" style={{ color: "var(--texto-3)" }}>
           {cliente.archivado
-            ? "Vuelve a aparecer en las listas y en el sidebar."
-            : "Desaparece de las listas y del sidebar. No se borra nada y se puede reactivar."}
+            ? t("Vuelve a aparecer en las listas y en el sidebar.")
+            : t("Desaparece de las listas y del sidebar. No se borra nada y se puede reactivar.")}
         </p>
         <button type="submit" className="boton-suave">
-          {cliente.archivado ? "Reactivar" : "Archivar"}
+          {cliente.archivado ? t("Reactivar") : t("Archivar")}
         </button>
       </form>
 

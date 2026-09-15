@@ -9,7 +9,7 @@ import Pastilla from "@/components/Pastilla";
 import EventoLinea from "@/components/EventoLinea";
 import Icono from "@/components/Icono";
 import { ETIQUETA_HITO, ETIQUETA_LADO } from "@/lib/dominio";
-import { fechaCorta, textoRelativo, diasHasta } from "@/lib/fechas";
+import { diasHasta } from "@/lib/fechas";
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
 import { traducirFilas, traducirAgrupado } from "@/lib/traduccion";
@@ -150,7 +150,7 @@ export default async function Hoy() {
                           minWidth: "4.25rem",
                         }}
                       >
-                        {fechaCorta(h.fecha_objetivo)}
+                        {t.fechaCorta(h.fecha_objetivo)}
                       </time>
                       <span className="text-sm flex-1 min-w-0 truncate">{h.titulo}</span>
                       {h.veces_movido > 0 && (
@@ -163,7 +163,7 @@ export default async function Hoy() {
                       className="px-3.5 pb-2 text-xs -mt-1"
                       style={{ color: "var(--texto-3)" }}
                     >
-                      {h.cliente_nombre} · {ETIQUETA_HITO[h.tipo]}
+                      {h.cliente_nombre} · {t(ETIQUETA_HITO[h.tipo])}
                     </p>
                   </li>
                 ))}
@@ -200,11 +200,11 @@ export default async function Hoy() {
                             className="num text-xs shrink-0"
                             style={{ color: colorPorUrgencia(dias) }}
                           >
-                            {c.fecha_limite ? textoRelativo(c.fecha_limite) : "—"}
+                            {c.fecha_limite ? t.relativo(c.fecha_limite) : "—"}
                           </span>
                         </div>
                         <p className="text-xs mt-0.5" style={{ color: "var(--texto-3)" }}>
-                          {c.cliente_nombre} · {ETIQUETA_LADO[c.lado]}
+                          {c.cliente_nombre} · {t(ETIQUETA_LADO[c.lado])}
                         </p>
                       </Link>
                     </li>
@@ -228,7 +228,7 @@ export default async function Hoy() {
                         className="num text-xs shrink-0"
                         style={{ color: "var(--texto-3)" }}
                       >
-                        {c.ultimo_evento ? textoRelativo(c.ultimo_evento) : t("sin registros")}
+                        {c.ultimo_evento ? t.relativo(c.ultimo_evento) : t("sin registros")}
                       </span>
                     </Link>
                   </li>

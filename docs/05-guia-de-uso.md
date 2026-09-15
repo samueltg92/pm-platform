@@ -131,21 +131,33 @@ las curvas de volumen, el paso a producción aparecerá marcado encima de la gr�
 
 ## Tema e idioma
 
-En **Cuenta** eliges tema —claro, oscuro o según el sistema— e idioma entre español e
-inglés. Las dos preferencias se guardan en cookie y las lee el servidor al renderizar, así
-que no hay parpadeo al cargar.
+Al pie del **menú lateral**, encima de tu nombre, hay dos controles: **ES / EN** para el
+idioma y tres iconos para el tema (según el sistema, claro, oscuro). Un clic y cambia; se
+guardan en cookie y las lee el servidor al renderizar, así que no hay parpadeo.
 
-En inglés se traduce tanto la interfaz como **lo que tú escribes**: títulos y detalles de
-eventos, actualizaciones, notas de hitos y descripciones de compromisos. La traducción la
-hace un modelo la primera vez y queda guardada, de modo que solo se paga una vez por
-texto; si editas el texto, se retraduce.
+En inglés se traduce **todo**: la interfaz, las fechas ("5 days ago", "Sep 7") y los
+números (81,000), y también **lo que tú escribes** — registros y actualizaciones, hitos y
+sus motivos de cambio de fecha, compromisos, la ficha del proyecto, roles de contactos y
+las notas del inventario. Quedan sin traducir, a propósito, los nombres propios y los
+datos técnicos: hosts, IPs, trunks, modelos, correos.
 
-Los nombres de cliente no se traducen, porque son nombres propios. Y los formularios de
-edición muestran siempre tu texto original: si mostraran la traducción, guardar
-sobreescribiría lo que escribiste con su versión en inglés.
+### Cómo se traduce tu contenido
 
-Si no hay proveedor de IA configurado, el inglés se aplica solo a la interfaz y tu
-contenido se ve tal como lo escribiste.
+Las páginas **nunca llaman al modelo**: solo leen traducciones ya guardadas. Un proceso en
+segundo plano recorre la base cada minuto, detecta lo que falta y lo traduce en lotes
+pequeños, respetando el límite del proveedor. Un texto nuevo aparece en español en la
+primera visita y en inglés en cuanto pasa ese proceso — segundos.
+
+Antes se traducía al pintar la página, con varias llamadas a la vez; al primer límite de
+peticiones la app se pausaba un minuto y lo no traducido se quedaba en español. Por eso un
+proyecto aparecía traducido y los demás no.
+
+En **Diagnóstico** hay una línea *Traducción al inglés* con cuántos textos quedan
+pendientes. Si no baja a cero en un par de minutos, el proceso está fallando y el motivo
+queda en los logs, en líneas que empiezan por `[traducción]`.
+
+Los formularios de edición muestran siempre tu texto original: si mostraran la traducción,
+guardar en inglés sobrescribiría lo que escribiste con su versión traducida.
 
 ## La pantalla Hoy
 

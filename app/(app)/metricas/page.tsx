@@ -4,7 +4,7 @@ import CapturaMetricas from "@/components/CapturaMetricas";
 import BotonBorrar from "@/components/BotonBorrar";
 import { borrarMetricaDia } from "@/app/acciones";
 import { Seccion, Vacio } from "@/components/Seccion";
-import { hoy, fechaLarga, fechaCorta, textoRelativo } from "@/lib/fechas";
+import { hoy } from "@/lib/fechas";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
@@ -39,14 +39,14 @@ export default async function Metricas({
         <p className="eyebrow mb-1">{t("Registro diario")}</p>
         <h1 className="titulo-pagina">{t("Métricas")}</h1>
         <p className="text-sm mt-1" style={{ color: "var(--texto-2)" }}>
-          {fechaLarga(fecha)}
-          {!esHoy && ` · ${textoRelativo(fecha)}`}
+          {t.fechaLarga(fecha)}
+          {!esHoy && ` · ${t.relativo(fecha)}`}
         </p>
       </div>
 
       <div className="flex items-center gap-2 mb-5">
         <Link href={`/metricas?fecha=${desplazar(fecha, -1)}`} className="boton-suave">
-          ← Día anterior
+          {t("← Día anterior")}
         </Link>
         {!esHoy && (
           <>
@@ -58,8 +58,7 @@ export default async function Metricas({
 
       {clientes.length === 0 ? (
         <Vacio>
-          No hay clientes en fase producción. Los números se piden solo cuando un cliente
-          llega a producción.
+          {t("No hay clientes en fase producción. Los números se piden solo cuando un cliente llega a producción.")}
         </Vacio>
       ) : (
         <CapturaMetricas fecha={fecha} clientes={clientes} />
@@ -67,7 +66,7 @@ export default async function Metricas({
 
       {registrados.length > 0 && (
         <div className="mt-8">
-          <Seccion titulo="Días ya registrados" contador={registrados.length}>
+          <Seccion titulo={t("Días ya registrados")} contador={registrados.length}>
             <div className="tarjeta divide-y" style={{ borderColor: "var(--borde)" }}>
               {registrados.map((c) => (
                 <div
@@ -79,7 +78,7 @@ export default async function Metricas({
                   <span className="text-xs flex-1 text-right" style={{ color: "var(--texto-3)" }}>
                     {c.sin_actividad
                       ? t("Sin actividad")
-                      : `${Number(c.llamadas_totales ?? 0).toLocaleString("es-CO")} llamadas`}
+                      : `${t.numero(c.llamadas_totales ?? 0)} ${t("llamadas")}`}
                   </span>
                   <form action={borrarMetricaDia} className="shrink-0">
                     <input type="hidden" name="cliente_id" value={c.cliente_id} />
@@ -107,7 +106,7 @@ export default async function Metricas({
                   className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-[var(--superficie-2)] transition-colors"
                   style={{ borderColor: "var(--borde)" }}
                 >
-                  <span className="text-sm">{fechaCorta(d.fecha)}</span>
+                  <span className="text-sm">{t.fechaCorta(d.fecha)}</span>
                   <span className="text-xs" style={{ color: "var(--texto-3)" }}>
                     {d.registrados} de {d.esperados} clientes
                   </span>

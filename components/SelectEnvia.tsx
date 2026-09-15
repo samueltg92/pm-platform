@@ -1,6 +1,7 @@
 "use client";
 
 import { useAvisar } from "./Avisos";
+import { useT } from "./Idioma";
 
 /**
  * Select que envía su formulario al cambiar. Es el patrón de los desplegables
@@ -18,6 +19,7 @@ export default function SelectEnvia({
   ancho?: string;
 }) {
   const avisar = useAvisar();
+  const t = useT();
 
   return (
     <select
@@ -26,7 +28,7 @@ export default function SelectEnvia({
       onChange={(e) => {
         const etiqueta = opciones.find((o) => o.valor === e.currentTarget.value)?.etiqueta;
         e.currentTarget.form?.requestSubmit();
-        if (etiqueta) avisar(etiqueta);
+        if (etiqueta) avisar(t(etiqueta));
       }}
       className="text-xs rounded-md px-2 py-1 cursor-pointer"
       style={{
@@ -38,7 +40,7 @@ export default function SelectEnvia({
     >
       {opciones.map((o) => (
         <option key={o.valor} value={o.valor}>
-          {o.etiqueta}
+          {t(o.etiqueta)}
         </option>
       ))}
     </select>

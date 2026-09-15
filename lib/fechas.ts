@@ -22,18 +22,24 @@ export function aISO(valor: Date | string | null | undefined): string {
   }).format(valor);
 }
 
-const FORMATO_CORTO = new Intl.DateTimeFormat("es-CO", {
-  timeZone: ZONA,
-  day: "numeric",
-  month: "short",
-});
+type IdiomaFecha = "es" | "en";
 
-const FORMATO_LARGO = new Intl.DateTimeFormat("es-CO", {
-  timeZone: ZONA,
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
+const LOCALE: Record<IdiomaFecha, string> = { es: "es-CO", en: "en-US" };
+
+const FORMATOS = Object.fromEntries(
+  (Object.keys(LOCALE) as IdiomaFecha[]).map((idioma) => [
+    idioma,
+    {
+      corto: new Intl.DateTimeFormat(LOCALE[idioma], { timeZone: ZONA, day: "numeric", month: "short" }),
+      largo: new Intl.DateTimeFormat(LOCALE[idioma], {
+        timeZone: ZONA,
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+    },
+  ]),
+) as Record<IdiomaFecha, { corto: Intl.DateTimeFormat; largo: Intl.DateTimeFormat }>;
 
 function comoFecha(valor: Date | string): Date {
   if (valor instanceof Date) return valor;
@@ -41,14 +47,19 @@ function comoFecha(valor: Date | string): Date {
   return new Date(`${valor.slice(0, 10)}T12:00:00Z`);
 }
 
-export function fechaCorta(valor: Date | string | null | undefined): string {
+/**
+ * El idioma es opcional y por defecto español: Slack, el ZIP y los correos
+ * siguen en español aunque la persona tenga la interfaz en inglés. En la
+ * interfaz se usan a través de `t.fechaCorta`, que ya lleva el idioma puesto.
+ */
+export function fechaCorta(valor: Date | string | null | undefined, idioma: IdiomaFecha = "es"): string {
   if (!valor) return "—";
-  return FORMATO_CORTO.format(comoFecha(valor));
+  return FORMATOS[idioma].corto.format(comoFecha(valor));
 }
 
-export function fechaLarga(valor: Date | string | null | undefined): string {
+export function fechaLarga(valor: Date | string | null | undefined, idioma: IdiomaFecha = "es"): string {
   if (!valor) return "—";
-  return FORMATO_LARGO.format(comoFecha(valor));
+  return FORMATOS[idioma].largo.format(comoFecha(valor));
 }
 
 /** Días que faltan (positivo) o que han pasado (negativo) hasta una fecha. */
@@ -59,15 +70,21 @@ export function diasHasta(valor: Date | string | null | undefined): number | nul
   return Math.round((objetivo - referencia) / 86_400_000);
 }
 
-/** "en 3 días", "hoy", "hace 5 días" */
-export function textoRelativo(valor: Date | string | null | undefined): string {
+/** "en 3 días", "hoy", "hace 5 días" — o "in 3 days", "today", "5 days ago". */
+export function textoRelativo(valor: Date | string | null | undefined, idioma: IdiomaFecha = "es"): string {
   const dias = diasHasta(valor);
   if (dias === null) return "—";
+  const n = Math.abs(dias);
+  if (idioma === "en") {
+    if (dias === 0) return "today";
+    if (dias === 1) return "tomorrow";
+    if (dias === -1) return "yesterday";
+    return dias > 0 ? `in ${n} days` : `${n} days ago`;
+  }
   if (dias === 0) return "hoy";
   if (dias === 1) return "mañana";
   if (dias === -1) return "ayer";
-  if (dias > 0) return `en ${dias} días`;
-  return `hace ${Math.abs(dias)} días`;
+  return dias > 0 ? `en ${n} días` : `hace ${n} días`;
 }
 
 /** Primer día del mes de una fecha, como 'YYYY-MM-01'. */

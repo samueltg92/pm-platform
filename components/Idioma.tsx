@@ -6,7 +6,7 @@ import type { Idioma } from "@/lib/preferencias";
 
 const Contexto = createContext<{ idioma: Idioma; t: Traductor }>({
   idioma: "es",
-  t: (texto) => texto,
+  t: crearTraductor("es"),
 });
 
 export function ProveedorIdioma({

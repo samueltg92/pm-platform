@@ -9,8 +9,6 @@ import FormularioInvitacion from "@/components/FormularioInvitacion";
 import SelectEnvia from "@/components/SelectEnvia";
 import Pastilla from "@/components/Pastilla";
 import { Vacio } from "@/components/Seccion";
-import { fechaCorta, textoRelativo } from "@/lib/fechas";
-
 export const dynamic = "force-dynamic";
 
 export default async function Equipo() {
@@ -105,7 +103,7 @@ export default async function Equipo() {
                   className="text-xs shrink-0"
                   style={{ color: i.caducada ? "var(--riesgo)" : "var(--texto-3)" }}
                 >
-                  {i.caducada ? t("caducada") : `${t("caduca")} ${textoRelativo(i.expira_en)}`}
+                  {i.caducada ? t("caducada") : `${t("caduca")} ${t.relativo(i.expira_en)}`}
                 </span>
                 <form action={revocarInvitacion} className="shrink-0">
                   <input type="hidden" name="id" value={i.id} />

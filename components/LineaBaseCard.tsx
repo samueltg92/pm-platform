@@ -13,10 +13,6 @@ import { mmss } from "@/lib/aht";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
-function miles(valor: number | string | null) {
-  if (valor === null) return "—";
-  return Number(valor).toLocaleString("es-CO", { maximumFractionDigits: 0 });
-}
 
 /**
  * Una comparación tiene tres partes: lo esperado, lo real y qué tan lejos está.
@@ -99,8 +95,8 @@ export default async function LineaBaseCard({
               {base.volumen_mensual_promedio !== null && (
                 <Fila
                   concepto={t("Volumen mensual")}
-                  esperado={miles(base.volumen_mensual_promedio)}
-                  real={miles(llamadasReales)}
+                  esperado={t.numero(base.volumen_mensual_promedio)}
+                  real={t.numero(llamadasReales)}
                   desvio={desvio(llamadasReales, base.volumen_mensual_promedio)}
                 />
               )}
@@ -129,11 +125,11 @@ export default async function LineaBaseCard({
               className="px-4 py-2.5 text-xs"
               style={{ color: "var(--texto-3)", borderTop: "1px solid var(--borde)" }}
             >
-              Concurrencia esperada:{" "}
-              {base.concurrencia_promedio !== null && `${base.concurrencia_promedio} media`}
+              {t("Concurrencia esperada:")}{" "}
+              {base.concurrencia_promedio !== null && `${base.concurrencia_promedio} ${t("media")}`}
               {base.concurrencia_promedio !== null && base.concurrencia_maxima !== null && " · "}
-              {base.concurrencia_maxima !== null && `${base.concurrencia_maxima} máxima`}
-              {base.entregado_por && ` · según ${base.entregado_por}`}
+              {base.concurrencia_maxima !== null && `${base.concurrencia_maxima} ${t("máxima")}`}
+              {base.entregado_por && ` · ${t("según")} ${base.entregado_por}`}
               {base.fecha_entrega && ` (${aISO(base.fecha_entrega)})`}
             </p>
           )}
@@ -150,8 +146,7 @@ export default async function LineaBaseCard({
           <input type="hidden" name="cliente_id" value={clienteId} />
 
           <p className="text-xs" style={{ color: "var(--texto-3)" }}>
-            Los supuestos que entrega TP antes de salir a producción. Es contra esto que
-            se compara la realidad después.
+            {t("Los supuestos que entrega TP antes de salir a producción. Es contra esto que se compara la realidad después.")}
           </p>
 
           <div className="grid sm:grid-cols-3 gap-3">
@@ -239,7 +234,7 @@ export default async function LineaBaseCard({
           </div>
 
           <p className="text-xs" style={{ color: "var(--texto-3)" }}>
-            Cambiar un valor que ya existía deja un evento en el timeline.
+            {t("Cambiar un valor que ya existía deja un evento en el timeline.")}
           </p>
 
           <button type="submit" className="boton">{t("Guardar línea base")}</button>

@@ -7,6 +7,8 @@ import { colorFase, ETIQUETA_FASE, type Fase } from "@/lib/dominio";
 import Buscador from "./Buscador";
 import Modal from "./Modal";
 import FormularioEvento from "./FormularioEvento";
+import SelectorPreferencias from "./SelectorPreferencias";
+import type { Idioma, Tema } from "@/lib/preferencias";
 
 import { useT } from "@/components/Idioma";
 export type ClienteSidebar = {
@@ -62,6 +64,8 @@ export default function Shell({
   esAdmin,
   puedeRegistrar,
   salir,
+  tema,
+  idioma,
   children,
 }: {
   clientes: ClienteSidebar[];
@@ -71,6 +75,8 @@ export default function Shell({
   esAdmin: boolean;
   puedeRegistrar: boolean;
   salir: React.ReactNode;
+  tema: Tema;
+  idioma: Idioma;
   children: React.ReactNode;
 }) {
   const t = useT();
@@ -205,6 +211,10 @@ export default function Shell({
             className="block px-2.5 py-1.5 text-xs"
             style={{ color: "var(--texto-3)" }}
           >{t("Ver todos")}</Link>
+        </div>
+
+        <div className="shrink-0" style={{ borderTop: "1px solid var(--borde)" }}>
+          <SelectorPreferencias tema={tema} idioma={idioma} />
         </div>
 
         <div

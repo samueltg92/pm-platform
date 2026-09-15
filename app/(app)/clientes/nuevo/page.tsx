@@ -14,7 +14,7 @@ export default async function NuevoCliente() {
   return (
     <div className="max-w-xl">
       <Link href="/clientes" className="text-sm" style={{ color: "var(--texto-2)" }}>
-        ← Clientes
+        ← {t("Clientes")}
       </Link>
 
       <h1 className="text-2xl font-semibold tracking-tight mt-3 mb-6">{t("Nuevo cliente")}</h1>

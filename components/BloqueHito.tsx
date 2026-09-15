@@ -1,9 +1,10 @@
 import Pastilla from "./Pastilla";
 import Icono from "./Icono";
+import { original } from "@/lib/original";
 import { moverFechaHito, cambiarEstadoHito, editarHito, borrarHito } from "@/app/acciones";
 import BotonBorrar from "./BotonBorrar";
 import { ETIQUETA_HITO, ETIQUETA_ESTADO_HITO, ESTADOS_HITO, TIPOS_HITO } from "@/lib/dominio";
-import { fechaCorta, textoRelativo, diasHasta, aISO } from "@/lib/fechas";
+import { diasHasta, aISO } from "@/lib/fechas";
 import type { HitoFila, CambioFecha } from "@/lib/consultas/hitos";
 
 import { crearTraductor } from "@/lib/i18n";
@@ -45,13 +46,13 @@ export default async function BloqueHito({
         </div>
 
         <div className="text-right shrink-0">
-          <time className="num text-sm font-medium block">{fechaCorta(hito.fecha_objetivo)}</time>
+          <time className="num text-sm font-medium block">{t.fechaCorta(hito.fecha_objetivo)}</time>
           {abierto && (
             <div
               className="text-xs"
               style={{ color: urgente ? "var(--riesgo)" : "var(--texto-3)" }}
             >
-              {textoRelativo(hito.fecha_objetivo)}
+              {t.relativo(hito.fecha_objetivo)}
             </div>
           )}
         </div>
@@ -99,7 +100,7 @@ export default async function BloqueHito({
             <ul className="mt-3 space-y-1.5">
               {historial.map((c) => (
                 <li key={c.id} className="text-xs" style={{ color: "var(--texto-3)" }}>
-                  {fechaCorta(c.fecha_anterior)} → {fechaCorta(c.fecha_nueva)} ·{" "}
+                  {t.fechaCorta(c.fecha_anterior)} → {t.fechaCorta(c.fecha_nueva)} ·{" "}
                   <span style={{ color: "var(--texto-2)" }}>{c.motivo}</span>
                 </li>
               ))}
@@ -119,7 +120,7 @@ export default async function BloqueHito({
             <div className="grid sm:grid-cols-[1fr_11rem_auto] gap-2 items-end">
               <div>
                 <label className="etiqueta">{t("Título")}</label>
-                <input name="titulo" required defaultValue={hito.titulo} className="campo" />
+                <input name="titulo" required defaultValue={original(hito, "titulo")} className="campo" />
               </div>
               <div>
                 <label className="etiqueta">{t("Tipo")}</label>
@@ -137,7 +138,7 @@ export default async function BloqueHito({
             </div>
             <div>
               <label className="etiqueta">{t("Notas")}</label>
-              <input name="notas" defaultValue={hito.notas ?? ""} className="campo" />
+              <input name="notas" defaultValue={original(hito, "notas")} className="campo" />
             </div>
           </form>
 

@@ -10,11 +10,12 @@ import BotonBorrar from "@/components/BotonBorrar";
 import Pastilla from "@/components/Pastilla";
 import { Vacio } from "@/components/Seccion";
 import { LADOS, ETIQUETA_LADO } from "@/lib/dominio";
-import { textoRelativo, diasHasta, aISO } from "@/lib/fechas";
+import { diasHasta, aISO } from "@/lib/fechas";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
 import { traducirFilas } from "@/lib/traduccion";
+import { original } from "@/lib/original";
 import Modal, { FormularioModal } from "@/components/Modal";
 export const dynamic = "force-dynamic";
 
@@ -109,8 +110,8 @@ export default async function CompromisosCliente({
                     )}
                   </div>
                   <p className="text-xs mt-0.5" style={{ color: "var(--texto-3)" }}>
-                    {c.responsable_nombre ?? "sin responsable"}
-                    {c.fecha_limite ? ` · ${textoRelativo(c.fecha_limite)}` : ""}
+                    {c.responsable_nombre ?? t("sin responsable")}
+                    {c.fecha_limite ? ` · ${t.relativo(c.fecha_limite)}` : ""}
                   </p>
                 </div>
                 <form action={cambiarEstadoCompromiso} className="shrink-0">
@@ -135,7 +136,7 @@ export default async function CompromisosCliente({
                     <input
                       name="descripcion"
                       required
-                      defaultValue={c.descripcion}
+                      defaultValue={original(c, "descripcion")}
                       className="campo"
                     />
                     <div className="grid sm:grid-cols-[8rem_1fr_10rem_auto] gap-2 items-end">
@@ -197,7 +198,7 @@ export default async function CompromisosCliente({
       {cerrados.length > 0 && (
         <details className="mt-3">
           <summary className="text-xs cursor-pointer select-none" style={{ color: "var(--texto-3)" }}>
-            {cerrados.length} cerrado{cerrados.length === 1 ? "" : "s"}
+            {cerrados.length} {cerrados.length === 1 ? t("cerrado") : t("cerrados")}
           </summary>
           <div className="tarjeta divide-y mt-2" style={{ borderColor: "var(--borde)" }}>
             {cerrados.map((c) => (

@@ -1,6 +1,5 @@
 import { sesionActual } from "@/lib/auth";
 import FormularioPassword from "@/components/FormularioPassword";
-import Preferencias from "@/components/Preferencias";
 
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
@@ -12,7 +11,6 @@ export default async function Perfil() {
 
   return (
     <div className="max-w-md">
-      <p className="eyebrow mb-1">{t("Preferencias")}</p>
       <h1 className="titulo-pagina mb-1">{t("Cuenta")}</h1>
       <p className="text-sm mb-6" style={{ color: "var(--texto-2)" }}>
         {sesion?.nombre} · {sesion?.email}
@@ -26,7 +24,6 @@ export default async function Perfil() {
         >
           {t("Diagnóstico de integraciones")}
         </a>
-        <Preferencias />
         <FormularioPassword />
       </div>
     </div>

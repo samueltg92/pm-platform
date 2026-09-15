@@ -21,7 +21,10 @@ export type NombreIcono =
   | "equipo"
   | "descargar"
   | "hilo"
-  | "vacio";
+  | "vacio"
+  | "sol"
+  | "luna"
+  | "pantalla";
 
 const TRAZOS: Record<NombreIcono, React.ReactNode> = {
   mas: <path d="M8 3.5v9M3.5 8h9" />,
@@ -71,6 +74,19 @@ const TRAZOS: Record<NombreIcono, React.ReactNode> = {
   hilo: (
     <>
       <path d="M2.8 4.4h10.4M2.8 8h7.4M2.8 11.6h4.6" />
+    </>
+  ),
+  sol: (
+    <>
+      <circle cx="8" cy="8" r="2.6" />
+      <path d="M8 1.8v1.4M8 12.8v1.4M1.8 8h1.4M12.8 8h1.4M3.6 3.6l1 1M11.4 11.4l1 1M3.6 12.4l1-1M11.4 4.6l1-1" />
+    </>
+  ),
+  luna: <path d="M12.6 10.2A5.4 5.4 0 0 1 5.8 3.4a5.4 5.4 0 1 0 6.8 6.8z" />,
+  pantalla: (
+    <>
+      <rect x="2.2" y="3" width="11.6" height="7.8" rx="1.2" />
+      <path d="M6 13.2h4M8 10.8v2.4" />
     </>
   ),
   vacio: (

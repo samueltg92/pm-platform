@@ -23,7 +23,7 @@ export default function FormularioPassword() {
           formulario.current?.reset();
           setHecho(true);
         } catch (e) {
-          setError(e instanceof Error ? e.message : "No se pudo cambiar");
+          setError(e instanceof Error ? t(e.message) : t("No se pudo cambiar"));
         } finally {
           setGuardando(false);
         }
@@ -80,7 +80,7 @@ export default function FormularioPassword() {
       )}
 
       <button type="submit" className="boton" disabled={guardando}>
-        {guardando ? "Cambiando…" : "Cambiar contraseña"}
+        {guardando ? t("Cambiando…") : t("Cambiar contraseña")}
       </button>
     </form>
   );

@@ -46,7 +46,7 @@ export default function FormularioInvitacion() {
 
       {estado?.ok === false && (
         <p className="text-sm mt-3" style={{ color: "var(--riesgo)" }}>
-          {estado.error}
+          {t(estado.error)}
         </p>
       )}
 

@@ -36,7 +36,7 @@ export default async function Registrar() {
           redirigir
           clientes={clientes.map((c) => ({
             id: c.id,
-            nombre: `${c.nombre} · ${ETIQUETA_FASE[c.fase]}`,
+            nombre: `${c.nombre} · ${t(ETIQUETA_FASE[c.fase])}`,
           }))}
         />
       )}

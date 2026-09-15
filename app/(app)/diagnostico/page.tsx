@@ -1,7 +1,9 @@
 import { diagnosticarSlack, diagnosticarIA, type Comprobacion } from "@/lib/slack/diagnostico";
 import { sql } from "@/lib/db";
 import { enviarGuiaSlack } from "@/app/acciones";
-import { crearTraductor } from "@/lib/i18n";
+import { crearTraductor, type Traductor } from "@/lib/i18n";
+import { textosPendientes } from "@/lib/traduccion";
+import { proveedorActivo } from "@/lib/llm";
 import { leerIdioma } from "@/lib/preferencias";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +15,7 @@ const COLOR: Record<Comprobacion["estado"], { fondo: string; texto: string; icon
   sin_probar: { fondo: "var(--superficie-2)", texto: "var(--texto-3)", icono: "·" },
 };
 
-function Fila({ c }: { c: Comprobacion }) {
+function Fila({ c, t }: { c: Comprobacion; t: Traductor }) {
   const color = COLOR[c.estado];
   return (
     <div className="flex items-start gap-3 px-4 py-3" style={{ borderColor: "var(--borde)" }}>
@@ -24,9 +26,9 @@ function Fila({ c }: { c: Comprobacion }) {
         {color.icono}
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-medium">{c.nombre}</p>
+        <p className="text-sm font-medium">{t(c.nombre)}</p>
         <p className="text-sm mt-0.5 break-words" style={{ color: "var(--texto-2)" }}>
-          {c.detalle}
+          {t(c.detalle)}
         </p>
       </div>
     </div>
@@ -36,13 +38,29 @@ function Fila({ c }: { c: Comprobacion }) {
 export default async function Diagnostico() {
   const t = crearTraductor(await leerIdioma());
 
-  const [slack, ia, envios] = await Promise.all([
+  const [slack, ia, envios, pendientes] = await Promise.all([
     diagnosticarSlack(),
     diagnosticarIA(),
     sql<{ clave: string; fecha: string; enviado_en: string }>(
       "select clave, fecha, enviado_en from envio_slack order by enviado_en desc limit 10",
     ),
+    textosPendientes("en"),
   ]);
+
+  // Cuántos textos escritos por el usuario faltan por traducir. Si no baja a
+  // cero en un par de minutos, el proceso de fondo está fallando: el motivo
+  // exacto queda en los logs, en líneas que empiezan por [traducción].
+  const traduccion: Comprobacion =
+    pendientes.length === 0
+      ? { nombre: "Traducción al inglés", estado: "ok", detalle: "Todo el contenido está traducido." }
+      : {
+          nombre: "Traducción al inglés",
+          estado: proveedorActivo() === "ninguno" ? "fallo" : "aviso",
+          detalle:
+            proveedorActivo() === "ninguno"
+              ? `${pendientes.length} ${t("textos sin traducir y ningún proveedor de IA configurado.")}`
+              : `${pendientes.length} ${t("textos pendientes. Se traducen solos en segundo plano, en lotes, cada minuto.")}`,
+        };
 
   const entorno: Comprobacion[] = [
     {
@@ -81,7 +99,7 @@ export default async function Diagnostico() {
           </div>
           <div className="tarjeta divide-y" style={{ borderColor: "var(--borde)" }}>
             {[...slack, ...entorno].map((c, i) => (
-              <Fila key={i} c={c} />
+              <Fila key={i} c={c}  t={t} />
             ))}
           </div>
         </section>
@@ -89,7 +107,10 @@ export default async function Diagnostico() {
         <section>
           <h2 className="text-sm font-semibold mb-2">{t("Modelo")}</h2>
           <div className="tarjeta">
-            <Fila c={ia} />
+            <Fila c={ia}  t={t} />
+            <div style={{ borderTop: "1px solid var(--borde)" }}>
+              <Fila c={traduccion} t={t} />
+            </div>
           </div>
         </section>
 

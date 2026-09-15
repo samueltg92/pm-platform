@@ -61,7 +61,7 @@ export default function FormularioEvento({
             typeof e === "object" && e !== null && "digest" in e &&
             String((e as { digest: unknown }).digest).startsWith("NEXT_REDIRECT")
           ) throw e;
-          setError(e instanceof Error ? e.message : "No se pudo registrar");
+          setError(e instanceof Error ? t(e.message) : t("No se pudo registrar"));
         } finally {
           setGuardando(false);
         }
@@ -182,7 +182,7 @@ export default function FormularioEvento({
           />{t("Hacer seguimiento")}</label>
 
         <button type="submit" className="boton ml-auto" disabled={guardando}>
-          {guardando ? "Guardando…" : "Registrar"}
+          {guardando ? t("Guardando…") : t("Registrar")}
         </button>
       </div>
     </form>

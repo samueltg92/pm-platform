@@ -6,6 +6,7 @@ import Modal, { FormularioModal } from "./Modal";
 import { LADOS, ETIQUETA_LADO } from "@/lib/dominio";
 import type { ContactoFila } from "@/lib/consultas/contactos";
 import type { Traductor } from "@/lib/i18n";
+import { original } from "@/lib/original";
 
 /**
  * Los contactos de un proyecto, dentro de su ficha.
@@ -29,7 +30,7 @@ function CamposContacto({ contacto, t }: { contacto?: ContactoFila; t: Traductor
           name="rol"
           className="campo"
           placeholder={t("Aprueba el guion")}
-          defaultValue={contacto?.rol ?? ""}
+          defaultValue={original(contacto, "rol")}
         />
       </div>
       <div>
