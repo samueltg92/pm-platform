@@ -576,4 +576,11 @@ export const EN: Record<string, string> = {
   "Buscar por nombre, rol, correo, teléfono o proyecto": "Search by name, role, email, phone or project",
   "El teléfono solo admite + al inicio, dígitos, espacios, guiones, puntos y paréntesis, y entre 7 y 15 dígitos.": "The phone number only accepts + at the start, digits, spaces, dashes, dots and parentheses, and 7 to 15 digits.",
   "editado por": "edited by",
+  "Añadir existentes": "Add existing",
+  "Añadir personas de otros proyectos": "Add people from other projects",
+  "Se copian sus datos a este proyecto. Luego puedes ajustar el rol aquí.": "Their details are copied into this project. You can adjust the role here afterwards.",
+  "Contactos añadidos": "Contacts added",
+  "Buscar persona": "Search person",
+  "Añadir seleccionados": "Add selected",
+  "Elige al menos una persona": "Choose at least one person",
 };

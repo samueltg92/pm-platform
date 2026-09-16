@@ -1451,3 +1451,74 @@ export async function restablecerPassword(datos: FormData) {
 
   redirect("/");
 }
+
+// -------------------------------------------------- reutilizar contactos
+
+/**
+ * Añade a un proyecto personas que ya existen en otros.
+ *
+ * Se copian sus datos en vez de compartir una sola fila: el rol de una persona
+ * cambia de un proyecto a otro, y los compromisos apuntan a su contacto dentro
+ * del proyecto. De cada persona se toma, campo a campo, el dato más reciente
+ * que tenga en cualquier proyecto. Quien ya está en este proyecto se salta, así
+ * que repetir la acción no duplica a nadie.
+ */
+export async function reutilizarContactos(datos: FormData) {
+  await exigirEditor();
+  const clienteId = z.uuid().parse(campo(datos, "cliente_id"));
+  const ids = z
+    .array(z.uuid())
+    .max(200)
+    .parse(datos.getAll("contacto_id").filter((v): v is string => typeof v === "string"));
+  if (ids.length === 0) throw new Error("Elige al menos una persona");
+
+  const { normalizar } = await import("@/lib/contactos");
+
+  await enTransaccion(async (q) => {
+    const elegidos = await q<{ nombre: string }>(
+      "select nombre from contacto where id = any($1::uuid[])",
+      [ids],
+    );
+    const claves = new Set(elegidos.map((e) => normalizar(e.nombre)));
+
+    const yaEstan = new Set(
+      (await q<{ nombre: string }>("select nombre from contacto where cliente_id = $1", [clienteId])).map(
+        (c) => normalizar(c.nombre),
+      ),
+    );
+
+    const todas = await q<{
+      nombre: string;
+      rol: string | null;
+      lado: string;
+      email: string | null;
+      telefono: string | null;
+    }>(
+      "select nombre, rol, lado, email, telefono from contacto order by creado_en desc",
+    );
+
+    const porPersona = new Map<string, (typeof todas)[number]>();
+    for (const fila of todas) {
+      const clave = normalizar(fila.nombre);
+      if (!claves.has(clave) || yaEstan.has(clave)) continue;
+      const actual = porPersona.get(clave);
+      if (!actual) porPersona.set(clave, { ...fila });
+      else {
+        actual.rol ??= fila.rol;
+        actual.email ??= fila.email;
+        actual.telefono ??= fila.telefono;
+      }
+    }
+
+    for (const p of porPersona.values()) {
+      await q(
+        `insert into contacto (cliente_id, nombre, rol, lado, email, telefono)
+         values ($1, $2, $3, $4, $5, $6)`,
+        [clienteId, p.nombre, p.rol, p.lado, p.email, p.telefono],
+      );
+    }
+  });
+
+  revalidatePath(`/clientes/${clienteId}`, "layout");
+  revalidatePath("/contactos");
+}

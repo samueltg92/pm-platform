@@ -1,4 +1,5 @@
-import { crearContacto, borrarContacto, editarContacto } from "@/app/acciones";
+import { crearContacto, borrarContacto, editarContacto, reutilizarContactos } from "@/app/acciones";
+import SelectorContactos, { type PersonaDisponible } from "./SelectorContactos";
 import BotonBorrar from "./BotonBorrar";
 import Autoria from "./Autoria";
 import Pastilla from "./Pastilla";
@@ -70,10 +71,13 @@ export default function ContactosCliente({
   clienteId,
   contactos,
   puedeEditar,
+  disponibles = [],
   t,
 }: {
   clienteId: string;
   contactos: ContactoFila[];
+  /** Personas de otros proyectos que aún no están en este. */
+  disponibles?: PersonaDisponible[];
   puedeEditar: boolean;
   t: Traductor;
 }) {
@@ -89,6 +93,19 @@ export default function ContactosCliente({
           )}
         </h2>
         {puedeEditar && (
+          <div className="flex items-center gap-2">
+          {disponibles.length > 0 && (
+            <Modal
+              etiqueta={t("Añadir existentes")}
+              titulo={t("Añadir personas de otros proyectos")}
+              descripcion={t("Se copian sus datos a este proyecto. Luego puedes ajustar el rol aquí.")}
+            >
+              <FormularioModal accion={reutilizarContactos} confirmacion={t("Contactos añadidos")}>
+                <input type="hidden" name="cliente_id" value={clienteId} />
+                <SelectorContactos personas={disponibles} />
+              </FormularioModal>
+            </Modal>
+          )}
           <Modal
             etiqueta={t("Añadir contacto")}
             titulo={t("Añadir contacto")}
@@ -102,6 +119,7 @@ export default function ContactosCliente({
               </button>
             </FormularioModal>
           </Modal>
+          </div>
         )}
       </div>
 

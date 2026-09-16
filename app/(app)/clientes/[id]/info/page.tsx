@@ -10,7 +10,8 @@ import {
 } from "@/lib/consultas/inventario";
 import { lineaBaseCliente } from "@/lib/consultas/lineaBase";
 import { resumenMensual } from "@/lib/consultas/metricas";
-import { contactosCliente } from "@/lib/consultas/contactos";
+import { contactosCliente, todosLosContactos } from "@/lib/consultas/contactos";
+import { agruparContactos, normalizar } from "@/lib/contactos";
 import {
   guardarFicha,
   guardarServidor,
@@ -140,7 +141,7 @@ export default async function InfoProyecto({
   const sesion = await sesionActual();
   const editable = sesion ? rolPuedeEditar(sesion.rol) : false;
 
-  const [cliente, fichaOriginal, servidoresO, sipsO, integracionesO, stackO, base, meses, contactosO] =
+  const [cliente, fichaOriginal, servidoresO, sipsO, integracionesO, stackO, base, meses, contactosO, agenda] =
     await Promise.all([
       obtenerCliente(id),
       fichaCliente(id),
@@ -151,9 +152,23 @@ export default async function InfoProyecto({
       lineaBaseCliente(id),
       resumenMensual(id, 1),
       contactosCliente(id),
+      todosLosContactos(),
     ]);
 
   if (!cliente) notFound();
+
+  // Personas de otros proyectos que todavía no están en este, para reutilizarlas.
+  const aqui = new Set(contactosO.map((c) => normalizar(c.nombre)));
+  const disponibles = agruparContactos(await traducirFilas(idioma, agenda, ["rol"]))
+    .filter((p) => !aqui.has(p.clave))
+    .map((p) => ({
+      id: p.apariciones[0].id,
+      nombre: p.nombre,
+      rol: p.roles.join(" · ") || null,
+      email: p.emails[0] ?? null,
+      telefono: p.telefonos[0] ?? null,
+      proyectos: p.apariciones.map((a) => a.clienteNombre),
+    }));
 
   // Todo lo que es prosa se pinta traducido; lo técnico (hosts, IPs, trunks,
   // modelos) no se toca. Los formularios leen el original con `original()`.
@@ -363,7 +378,13 @@ export default async function InfoProyecto({
       />
 
       {/* --------------------------------------------------------- contactos */}
-      <ContactosCliente clienteId={id} contactos={contactos} puedeEditar={editable} t={t} />
+      <ContactosCliente
+        clienteId={id}
+        contactos={contactos}
+        puedeEditar={editable}
+        disponibles={disponibles}
+        t={t}
+      />
     </>
   );
 }
