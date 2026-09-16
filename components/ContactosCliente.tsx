@@ -1,5 +1,6 @@
 import { crearContacto, borrarContacto, editarContacto } from "@/app/acciones";
 import BotonBorrar from "./BotonBorrar";
+import Autoria from "./Autoria";
 import Pastilla from "./Pastilla";
 import { Vacio } from "./Seccion";
 import Modal, { FormularioModal } from "./Modal";
@@ -123,6 +124,7 @@ export default function ContactosCliente({
                 </div>
                 <p className="text-xs mt-0.5" style={{ color: "var(--texto-3)" }}>
                   {[c.rol, c.email].filter(Boolean).join(" · ") || (c.telefono ? null : "—")}
+                  <Autoria fila={c} antes={c.rol || c.email || c.telefono ? " · " : ""} />
                   {c.telefono && (
                     <>
                       {(c.rol || c.email) && " · "}

@@ -1,5 +1,6 @@
 import "server-only";
 import { sql, uno } from "../db";
+import { sqlAutoria, type Autoria } from "../autoria";
 
 export type AdjuntoFila = {
   id: string;
@@ -8,7 +9,7 @@ export type AdjuntoFila = {
   tipo_mime: string;
   tamano_bytes: string;
   creado_en: string;
-};
+} & Autoria;
 
 /** Metadatos de los adjuntos de varios eventos. Nunca trae el contenido. */
 export async function adjuntosDe(
@@ -17,8 +18,8 @@ export async function adjuntosDe(
   if (eventoIds.length === 0) return {};
 
   const filas = await sql<AdjuntoFila>(
-    `select id, evento_id, nombre, tipo_mime, tamano_bytes, creado_en
-     from adjunto
+    `select ad.id, ad.evento_id, ad.nombre, ad.tipo_mime, ad.tamano_bytes, ad.creado_en, ${sqlAutoria("ad")}
+     from adjunto ad
      where evento_id = any($1::uuid[])
      order by creado_en`,
     [eventoIds],

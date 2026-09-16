@@ -38,12 +38,61 @@ export function obtenerPool(): Pool {
   return globalThis.__pmPool;
 }
 
+const ESCRITURA = /\b(insert\s+into|update\s+\w+\s+set|delete\s+from)\b/i;
+
+/**
+ * El usuario de la petición en curso, leído de la cookie de sesión.
+ *
+ * Solo se usa para decirle a la base quién escribe: los triggers de autoría
+ * (migración 014) lo guardan en `creado_por` y `editado_por`. Los permisos
+ * no dependen de esto —los comprueban las acciones—, así que basta con que el
+ * token sea auténtico. Fuera de una petición (Slack, procesos de fondo,
+ * scripts) no hay cookie y la escritura queda sin autor, que es la verdad.
+ */
+async function usuarioEnCurso(): Promise<string | null> {
+  try {
+    const { cookies } = await import("next/headers");
+    const token = (await cookies()).get("pm_sesion")?.value;
+    if (!token) return null;
+    const { jwtVerify } = await import("jose");
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(process.env.SESSION_SECRET ?? ""),
+    );
+    return typeof payload.id === "string" ? payload.id : null;
+  } catch {
+    return null;
+  }
+}
+
+async function marcarUsuario(ejecutar: (texto: string, params: unknown[]) => Promise<unknown>) {
+  const usuario = await usuarioEnCurso();
+  if (usuario) await ejecutar("select set_config('app.usuario', $1, true)", [usuario]);
+}
+
 export async function sql<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params: unknown[] = [],
 ): Promise<T[]> {
-  const res = await obtenerPool().query<T>(text, params);
-  return res.rows;
+  // Las lecturas van directas. Las escrituras van en una transacción corta
+  // para que `set_config(..., true)` quede ligado a ellas y no a la conexión,
+  // que el pool reutiliza para otras peticiones.
+  if (!ESCRITURA.test(text)) {
+    return (await obtenerPool().query<T>(text, params)).rows;
+  }
+  const cliente = await obtenerPool().connect();
+  try {
+    await cliente.query("begin");
+    await marcarUsuario((t, p) => cliente.query(t, p));
+    const res = await cliente.query<T>(text, params);
+    await cliente.query("commit");
+    return res.rows;
+  } catch (error) {
+    await cliente.query("rollback");
+    throw error;
+  } finally {
+    cliente.release();
+  }
 }
 
 export async function uno<T extends QueryResultRow = QueryResultRow>(
@@ -59,6 +108,7 @@ export async function enTransaccion<T>(fn: (q: typeof sql) => Promise<T>): Promi
   const cliente = await obtenerPool().connect();
   try {
     await cliente.query("begin");
+    await marcarUsuario((t, p) => cliente.query(t, p));
     const consultar = async <R extends QueryResultRow = QueryResultRow>(
       text: string,
       params: unknown[] = [],

@@ -6,6 +6,7 @@ import {
   borrarLineaBase,
 } from "@/app/acciones";
 import BotonBorrar from "./BotonBorrar";
+import Autoria from "./Autoria";
 import type { LineaBase } from "@/lib/consultas/lineaBase";
 import type { ResumenMes } from "@/lib/consultas/metricas";
 import { aISO } from "@/lib/fechas";
@@ -131,6 +132,7 @@ export default async function LineaBaseCard({
               {base.concurrencia_maxima !== null && `${base.concurrencia_maxima} ${t("máxima")}`}
               {base.entregado_por && ` · ${t("según")} ${base.entregado_por}`}
               {base.fecha_entrega && ` (${aISO(base.fecha_entrega)})`}
+              <Autoria fila={base} antes=" · " />
             </p>
           )}
         </div>

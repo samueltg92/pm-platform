@@ -1,5 +1,6 @@
 import Pastilla from "./Pastilla";
 import Icono from "./Icono";
+import Autoria from "./Autoria";
 import { original } from "@/lib/original";
 import { moverFechaHito, cambiarEstadoHito, editarHito, borrarHito } from "@/app/acciones";
 import BotonBorrar from "./BotonBorrar";
@@ -43,6 +44,7 @@ export default async function BloqueHito({
               {hito.notas}
             </p>
           )}
+          <Autoria fila={hito} className="block mt-1" />
         </div>
 
         <div className="text-right shrink-0">
@@ -100,6 +102,11 @@ export default async function BloqueHito({
             <ul className="mt-3 space-y-1.5">
               {historial.map((c) => (
                 <li key={c.id} className="text-xs" style={{ color: "var(--texto-3)" }}>
+                  {c.creado_por_nombre && (
+                    <strong className="font-medium" style={{ color: "var(--texto-2)" }}>
+                      {c.creado_por_nombre}:{" "}
+                    </strong>
+                  )}
                   {t.fechaCorta(c.fecha_anterior)} → {t.fechaCorta(c.fecha_nueva)} ·{" "}
                   <span style={{ color: "var(--texto-2)" }}>{c.motivo}</span>
                 </li>

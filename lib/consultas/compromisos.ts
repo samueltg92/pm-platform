@@ -1,5 +1,6 @@
 import "server-only";
 import { sql } from "../db";
+import { sqlAutoria, type Autoria } from "../autoria";
 import type { EstadoCompromiso, Lado } from "../dominio";
 
 export type CompromisoFila = {
@@ -13,10 +14,10 @@ export type CompromisoFila = {
   fecha_limite: string | null;
   estado: EstadoCompromiso;
   creado_en: string;
-};
+} & Autoria;
 
 const SELECT_BASE = `
-  select co.*, c.nombre as cliente_nombre, ct.nombre as responsable_nombre
+  select co.*, ${sqlAutoria("co")}, c.nombre as cliente_nombre, ct.nombre as responsable_nombre
   from compromiso co
   join cliente c on c.id = co.cliente_id
   left join contacto ct on ct.id = co.responsable_id

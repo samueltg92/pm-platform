@@ -1,5 +1,6 @@
 import "server-only";
 import { uno } from "../db";
+import { sqlAutoria, type Autoria } from "../autoria";
 
 export type LineaBase = {
   id: string;
@@ -12,8 +13,8 @@ export type LineaBase = {
   entregado_por: string | null;
   fecha_entrega: string | null;
   notas: string | null;
-};
+} & Autoria;
 
 export async function lineaBaseCliente(clienteId: string) {
-  return uno<LineaBase>("select * from linea_base where id = $1", [clienteId]);
+  return uno<LineaBase>(`select lb.*, ${sqlAutoria("lb")} from linea_base lb where id = $1`, [clienteId]);
 }

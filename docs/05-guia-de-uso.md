@@ -300,6 +300,27 @@ Esa semilla **no se ejecuta al desplegar** — el contenedor solo corre las migr
 el servidor. Cambiar `PM_PASSWORD` en el panel y volver a desplegar no cambia ninguna
 contraseña.
 
+## Quién hizo cada cosa
+
+Cada dato muestra quién lo creó y, si alguien lo cambió, quién y cuándo, **pegado al
+propio dato**: en un registro del timeline, *"Manuela Galvis · editado por Samuel · hoy"*;
+en el hilo de actualizaciones, *"Manuela Galvis: ya lo resolvieron"*; en el historial de
+un hito, *"Manuela Galvis: 27 ago → 7 sep · motivo"*. Igual en compromisos, contactos,
+inventario, ficha y línea base.
+
+Lo registra la base de datos, no cada pantalla: un trigger anota el autor en toda
+escritura, así que nada puede entrar sin autor aunque se añadan funciones nuevas.
+Guardar un formulario sin cambiar nada no cuenta como edición.
+
+Lo que no se sabe, no se inventa:
+
+- Lo creado **antes del 26 de agosto** —cuando solo existía Samuel— está atribuido a él.
+- Lo creado **entre esa fecha y la activación de esta función** no tiene autor visible:
+  no hay forma de saber quién fue.
+- Lo que llega **por Slack** tampoco lleva autor, porque Slack no inicia sesión en la
+  plataforma.
+- **Lo borrado desaparece** con su autoría: no queda rastro de quién lo borró.
+
 ## Sacar los datos
 
 En **Clientes**, el botón **Descargar todo** genera un ZIP con absolutamente todo lo

@@ -1,5 +1,6 @@
 import "server-only";
 import { sql } from "../db";
+import { sqlAutoria, type Autoria } from "../autoria";
 import type { Lado } from "../dominio";
 
 export type ContactoFila = {
@@ -10,12 +11,12 @@ export type ContactoFila = {
   email: string | null;
   telefono: string | null;
   notas: string | null;
-};
+} & Autoria;
 
 export async function contactosCliente(clienteId: string) {
   return sql<ContactoFila>(
-    `select id, nombre, rol, lado, email, telefono, notas
-     from contacto where cliente_id = $1
+    `select ct.id, ct.nombre, ct.rol, ct.lado, ct.email, ct.telefono, ct.notas, ${sqlAutoria("ct")}
+     from contacto ct where cliente_id = $1
      order by array_position(array['interno','partner','cliente']::lado_contacto[], lado), nombre`,
     [clienteId],
   );

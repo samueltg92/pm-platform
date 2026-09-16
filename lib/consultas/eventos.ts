@@ -1,5 +1,6 @@
 import "server-only";
 import { sql } from "../db";
+import { sqlAutoria, type Autoria } from "../autoria";
 import type { EstadoSeguimiento, Severidad, TipoEvento } from "../dominio";
 
 export type EventoFila = {
@@ -16,7 +17,7 @@ export type EventoFila = {
   creado_en: string;
   actualizaciones: number;
   ultima_actualizacion: string | null;
-};
+} & Autoria;
 
 export type Actualizacion = {
   id: string;
@@ -26,10 +27,10 @@ export type Actualizacion = {
   estado_nuevo: EstadoSeguimiento | null;
   origen: "app" | "slack" | "llm";
   creado_en: string;
-};
+} & Autoria;
 
 const SELECT_BASE = `
-  select e.*, c.nombre as cliente_nombre,
+  select e.*, c.nombre as cliente_nombre, ${sqlAutoria("e")},
          coalesce(a.total, 0)::int as actualizaciones,
          a.ultima as ultima_actualizacion
   from evento e
@@ -78,7 +79,7 @@ export async function actualizacionesDe(
   if (eventoIds.length === 0) return {};
 
   const filas = await sql<Actualizacion>(
-    `select * from evento_actualizacion
+    `select a.*, ${sqlAutoria("a")} from evento_actualizacion a
      where evento_id = any($1::uuid[])
      order by creado_en`,
     [eventoIds],

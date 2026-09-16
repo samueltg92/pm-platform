@@ -1,5 +1,6 @@
 import Pastilla from "./Pastilla";
 import BotonBorrar from "./BotonBorrar";
+import Autoria from "./Autoria";
 import { original } from "@/lib/original";
 import Icono from "./Icono";
 import {
@@ -95,6 +96,8 @@ export default async function EventoLinea({
         )}
 
         {evento.origen !== "app" && <Pastilla>{evento.origen}</Pastilla>}
+
+        <Autoria fila={evento} />
 
         {mostrarCliente && (
           <span className="text-xs" style={{ color: "var(--texto-3)" }}>
@@ -222,6 +225,11 @@ export default async function EventoLinea({
                           className="text-sm whitespace-pre-wrap"
                           style={{ color: "var(--texto-2)" }}
                         >
+                          {a.creado_por_nombre && (
+                            <strong className="font-medium" style={{ color: "var(--texto)" }}>
+                              {a.creado_por_nombre}:{" "}
+                            </strong>
+                          )}
                           {a.cuerpo}
                         </p>
                       </div>

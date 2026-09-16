@@ -1,5 +1,6 @@
 import "server-only";
 import { sql, uno } from "../db";
+import { sqlAutoria, type Autoria } from "../autoria";
 import type { CategoriaStack, EstadoRecurso, TipoContactoAgente } from "../dominio";
 
 export type Ficha = {
@@ -11,7 +12,7 @@ export type Ficha = {
   ambiente: string | null;
   pais: string | null;
   observaciones: string | null;
-};
+} & Autoria;
 
 export type Servidor = {
   id: string;
@@ -32,7 +33,7 @@ export type Servidor = {
   owner_tecnico: string | null;
   estado: EstadoRecurso;
   notas: string | null;
-};
+} & Autoria;
 
 export type Sip = {
   id: string;
@@ -49,7 +50,7 @@ export type Sip = {
   transfer_destino: string | null;
   estado: EstadoRecurso;
   notas: string | null;
-};
+} & Autoria;
 
 export type Integracion = {
   id: string;
@@ -65,7 +66,7 @@ export type Integracion = {
   owner: string | null;
   estado: EstadoRecurso;
   notas: string | null;
-};
+} & Autoria;
 
 export type Stack = {
   id: string;
@@ -76,10 +77,10 @@ export type Stack = {
   version: string | null;
   notas: string | null;
   estado: EstadoRecurso;
-};
+} & Autoria;
 
 export function fichaCliente(clienteId: string) {
-  return uno<Ficha>("select * from ficha_proyecto where id = $1", [clienteId]);
+  return uno<Ficha>(`select f.*, ${sqlAutoria("f")} from ficha_proyecto f where id = $1`, [clienteId]);
 }
 
 /**
@@ -90,7 +91,7 @@ const ORDEN_ESTADO = `case estado when 'activo' then 0 when 'planeado' then 1 el
 
 export function servidoresCliente(clienteId: string) {
   return sql<Servidor>(
-    `select * from servidor_app where cliente_id = $1
+    `select s.*, ${sqlAutoria("s")} from servidor_app s where cliente_id = $1
      order by ${ORDEN_ESTADO}, coalesce(server_name, app_origen, ''), creado_en`,
     [clienteId],
   );
@@ -98,7 +99,7 @@ export function servidoresCliente(clienteId: string) {
 
 export function sipCliente(clienteId: string) {
   return sql<Sip>(
-    `select * from sip_trunk where cliente_id = $1
+    `select s.*, ${sqlAutoria("s")} from sip_trunk s where cliente_id = $1
      order by ${ORDEN_ESTADO}, coalesce(trunk_name, ''), creado_en`,
     [clienteId],
   );
@@ -106,7 +107,7 @@ export function sipCliente(clienteId: string) {
 
 export function integracionesCliente(clienteId: string) {
   return sql<Integracion>(
-    `select * from integracion_externa where cliente_id = $1
+    `select s.*, ${sqlAutoria("s")} from integracion_externa s where cliente_id = $1
      order by ${ORDEN_ESTADO}, sistema, creado_en`,
     [clienteId],
   );
@@ -118,7 +119,7 @@ export function integracionesCliente(clienteId: string) {
  */
 export function stackCliente(clienteId: string) {
   return sql<Stack>(
-    `select * from stack_item where cliente_id = $1
+    `select s.*, ${sqlAutoria("s")} from stack_item s where cliente_id = $1
      order by ${ORDEN_ESTADO},
        array_position(
          array['stt','llm','tts','vad','telefonia','sip','vector_db','infra']::categoria_stack[],

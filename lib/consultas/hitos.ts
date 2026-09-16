@@ -1,5 +1,6 @@
 import "server-only";
 import { sql } from "../db";
+import { sqlAutoria, type Autoria } from "../autoria";
 import type { EstadoHito, TipoHito } from "../dominio";
 
 export type HitoFila = {
@@ -13,10 +14,10 @@ export type HitoFila = {
   responsable_nombre: string | null;
   notas: string | null;
   veces_movido: number;
-};
+} & Autoria;
 
 const SELECT_BASE = `
-  select h.*, c.nombre as cliente_nombre,
+  select h.*, c.nombre as cliente_nombre, ${sqlAutoria("h")},
          ct.nombre as responsable_nombre,
          coalesce(m.veces, 0)::int as veces_movido
   from hito h
@@ -66,11 +67,11 @@ export type CambioFecha = {
   fecha_nueva: string;
   motivo: string;
   creado_en: string;
-};
+} & Autoria;
 
 export async function historialFechas(hitoId: string) {
   return sql<CambioFecha>(
-    `select * from hito_cambio_fecha where hito_id = $1 order by creado_en desc`,
+    `select cf.*, ${sqlAutoria("cf")} from hito_cambio_fecha cf where hito_id = $1 order by creado_en desc`,
     [hitoId],
   );
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { obtenerCliente } from "@/lib/consultas/clientes";
+import Autoria from "@/components/Autoria";
 import {
   fichaCliente,
   servidoresCliente,
@@ -283,6 +284,9 @@ export default async function InfoProyecto({
                 </div>
               )}
             </dl>
+          ) : null}
+          {ficha ? (
+            <Autoria fila={ficha} className="block mt-3" />
           ) : (
             <p className="text-sm" style={{ color: "var(--texto-2)" }}>
               {t("Sin ficha todavía. El caso de uso y el tipo de contacto se definen aquí.")}

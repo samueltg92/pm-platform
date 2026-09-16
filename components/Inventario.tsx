@@ -1,5 +1,7 @@
 import Modal, { FormularioModal } from "./Modal";
 import BotonBorrar from "./BotonBorrar";
+import Autoria from "./Autoria";
+import type { Autoria as DatosAutoria } from "@/lib/autoria";
 import Pastilla from "./Pastilla";
 import { Vacio } from "./Seccion";
 import type { Traductor } from "@/lib/i18n";
@@ -201,6 +203,7 @@ export default function Inventario({
                   <Pastilla fondo={color.fondo} texto={color.texto}>
                     {t(ETIQUETA_ESTADO_RECURSO[item.estado])}
                   </Pastilla>
+                  <Autoria fila={item as DatosAutoria} />
                   <span className="flex-1" />
                   {puedeEditar && (
                     <>

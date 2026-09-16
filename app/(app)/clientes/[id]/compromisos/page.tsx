@@ -1,5 +1,6 @@
 import { compromisosCliente } from "@/lib/consultas/compromisos";
 import { contactosCliente } from "@/lib/consultas/contactos";
+import Autoria from "@/components/Autoria";
 import {
   crearCompromiso,
   cambiarEstadoCompromiso,
@@ -111,6 +112,7 @@ export default async function CompromisosCliente({
                   </div>
                   <p className="text-xs mt-0.5" style={{ color: "var(--texto-3)" }}>
                     {c.responsable_nombre ?? t("sin responsable")}
+                    <Autoria fila={c} antes=" · " />
                     {c.fecha_limite ? ` · ${t.relativo(c.fecha_limite)}` : ""}
                   </p>
                 </div>
