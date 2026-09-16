@@ -220,6 +220,10 @@ por proyecto. Aquí se juntan **por nombre**, no por correo: el correo de una mi
 persona cambia entre proyectos (TP usa `@tp.com` y `@teleperformance.com`), y agrupar
 por correo la partiría en dos justo cuando lo que querías era verla una vez.
 
+Cada contacto puede llevar **teléfono** con su indicativo (`+57 300 123 4567`); se guarda tal
+como lo escribes, se marca con un clic desde el móvil y en la agenda se busca por sus
+dígitos.
+
 Cuando alguien tiene varios correos registrados se muestran todos, marcados. Casi
 siempre es una ficha copiada con el buzón equivocado, y así se ve en lugar de quedar
 enterrada.

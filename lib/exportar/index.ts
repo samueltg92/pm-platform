@@ -363,12 +363,13 @@ function fichaCliente(d: DatosCliente, carpetaAdjuntos: string | null): string {
   } else {
     partes.push(
       tabla(
-        ["Nombre", "Lado", "Rol", "Email"],
+        ["Nombre", "Lado", "Rol", "Email", "Teléfono"],
         d.contactos.map((ct) => [
           ct.nombre,
           ETIQUETA_LADO[ct.lado],
           recortar(ct.rol ?? "—", 22),
           ct.email ?? "—",
+          ct.telefono ?? "—",
         ]),
       ),
     );
@@ -890,7 +891,7 @@ export async function construirExport(): Promise<Export> {
     "Datos/contactos.csv",
     paraArchivo(
       csv(
-        ["cliente", "nombre", "lado", "rol", "email", "notas"],
+        ["cliente", "nombre", "lado", "rol", "email", "telefono", "notas"],
         clientes.flatMap((c) =>
           datos.get(c.id)!.contactos.map((ct) => [
             c.nombre,
@@ -898,6 +899,7 @@ export async function construirExport(): Promise<Export> {
             ct.lado,
             ct.rol,
             ct.email,
+            ct.telefono,
             ct.notas,
           ]),
         ),

@@ -27,6 +27,7 @@ export type FilaContacto = {
   rol: string | null;
   lado: Lado;
   email: string | null;
+  telefono?: string | null;
   cliente_id: string;
   cliente_nombre: string;
 };
@@ -46,6 +47,7 @@ export type Persona = {
   lados: Lado[];
   roles: string[];
   emails: string[];
+  telefonos: string[];
   apariciones: Aparicion[];
 };
 
@@ -70,7 +72,7 @@ export function agruparContactos(filas: FilaContacto[]): Persona[] {
 
     let persona = porPersona.get(clave);
     if (!persona) {
-      persona = { clave, nombre: fila.nombre, lados: [], roles: [], emails: [], apariciones: [] };
+      persona = { clave, nombre: fila.nombre, lados: [], roles: [], emails: [], telefonos: [], apariciones: [] };
       porPersona.set(clave, persona);
     }
 
@@ -84,6 +86,14 @@ export function agruparContactos(filas: FilaContacto[]): Persona[] {
     const email = fila.email?.trim();
     if (email && !persona.emails.some((e) => e.toLowerCase() === email.toLowerCase())) {
       persona.emails.push(email);
+    }
+
+    // Mismo número escrito distinto ("+57 300…" y "300…") cuenta como uno si
+    // coinciden los últimos 10 dígitos.
+    const telefono = fila.telefono?.trim();
+    if (telefono) {
+      const cola = (x: string) => x.replace(/[^0-9]/g, "").slice(-10);
+      if (!persona.telefonos.some((t) => cola(t) === cola(telefono))) persona.telefonos.push(telefono);
     }
 
     persona.apariciones.push({

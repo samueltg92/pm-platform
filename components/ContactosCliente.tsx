@@ -19,7 +19,7 @@ import { original } from "@/lib/original";
  */
 function CamposContacto({ contacto, t }: { contacto?: ContactoFila; t: Traductor }) {
   return (
-    <div className="grid sm:grid-cols-4 gap-3">
+    <div className="grid sm:grid-cols-2 gap-3">
       <div>
         <label className="etiqueta">{t("Nombre")}</label>
         <input name="nombre" required className="campo" defaultValue={contacto?.nombre ?? ""} />
@@ -46,6 +46,20 @@ function CamposContacto({ contacto, t }: { contacto?: ContactoFila; t: Traductor
       <div>
         <label className="etiqueta">{t("Email")}</label>
         <input name="email" type="email" className="campo" defaultValue={contacto?.email ?? ""} />
+      </div>
+      <div>
+        <label className="etiqueta">{t("Teléfono")}</label>
+        <input
+          name="telefono"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          className="campo"
+          placeholder="+57 300 123 4567"
+          pattern="\+?[0-9 \(\)\.\-]{7,24}"
+          title={t("Con indicativo de país, por ejemplo +57 300 123 4567")}
+          defaultValue={contacto?.telefono ?? ""}
+        />
       </div>
     </div>
   );
@@ -108,7 +122,15 @@ export default function ContactosCliente({
                   <Pastilla>{t(ETIQUETA_LADO[c.lado])}</Pastilla>
                 </div>
                 <p className="text-xs mt-0.5" style={{ color: "var(--texto-3)" }}>
-                  {[c.rol, c.email].filter(Boolean).join(" · ") || "—"}
+                  {[c.rol, c.email].filter(Boolean).join(" · ") || (c.telefono ? null : "—")}
+                  {c.telefono && (
+                    <>
+                      {(c.rol || c.email) && " · "}
+                      <a href={`tel:${c.telefono.replace(/[^0-9+]/g, "")}`} className="hover:underline num">
+                        {c.telefono}
+                      </a>
+                    </>
+                  )}
                 </p>
               </div>
 

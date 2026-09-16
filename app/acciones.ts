@@ -51,6 +51,22 @@ const opcional = z
   .nullable();
 const fecha = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida");
 
+/**
+ * Teléfono tal como lo escribe la gente: `+57 300 123 4567`, `(601) 555-1234`.
+ * Se guarda con su formato —el `+` del indicativo incluido— y solo se valida
+ * que tenga sentido: `+` únicamente al principio, separadores habituales y
+ * entre 7 y 15 dígitos, el máximo de E.164. La base aplica la misma regla.
+ */
+function telefonoOpcional(valor: string): string | null {
+  const limpio = valor.trim().replace(/\s+/g, " ");
+  if (limpio === "") return null;
+  const digitos = limpio.replace(/[^0-9]/g, "").length;
+  if (!/^\+?[0-9 ().-]+$/.test(limpio) || digitos < 7 || digitos > 15) {
+    throw new Error("El teléfono solo admite + al inicio, dígitos, espacios, guiones, puntos y paréntesis, y entre 7 y 15 dígitos.");
+  }
+  return limpio;
+}
+
 function campo(datos: FormData, nombre: string) {
   const valor = datos.get(nombre);
   return typeof valor === "string" ? valor : "";
@@ -700,6 +716,7 @@ export async function editarContacto(datos: FormData) {
       rol: opcional,
       lado: z.enum(LADOS),
       email: opcional,
+      telefono: z.string().transform(telefonoOpcional),
     })
     .parse({
       id: campo(datos, "id"),
@@ -708,14 +725,18 @@ export async function editarContacto(datos: FormData) {
       rol: campo(datos, "rol"),
       lado: campo(datos, "lado"),
       email: campo(datos, "email"),
+      telefono: campo(datos, "telefono"),
     });
 
   await sql(
-    "update contacto set nombre = $2, rol = $3, lado = $4, email = $5 where id = $1",
-    [v.id, v.nombre, v.rol, v.lado, v.email],
+    "update contacto set nombre = $2, rol = $3, lado = $4, email = $5, telefono = $6 where id = $1",
+    [v.id, v.nombre, v.rol, v.lado, v.email, v.telefono],
   );
 
-  revalidatePath(`/clientes/${v.cliente_id}/contactos`);
+  // Los contactos viven en la pestaña Información: refrescar la ruta vieja
+  // /contactos, que ahora es una redirección, dejaba la ficha sin actualizar.
+  revalidatePath(`/clientes/${v.cliente_id}`, "layout");
+  revalidatePath("/contactos");
 }
 
 export async function borrarMetricaDia(datos: FormData) {
@@ -1100,6 +1121,7 @@ export async function crearContacto(datos: FormData) {
       rol: opcional,
       lado: z.enum(LADOS),
       email: opcional,
+      telefono: z.string().transform(telefonoOpcional),
       notas: opcional,
     })
     .parse({
@@ -1108,16 +1130,18 @@ export async function crearContacto(datos: FormData) {
       rol: campo(datos, "rol"),
       lado: campo(datos, "lado") || "cliente",
       email: campo(datos, "email"),
+      telefono: campo(datos, "telefono"),
       notas: campo(datos, "notas"),
     });
 
   await sql(
-    `insert into contacto (cliente_id, nombre, rol, lado, email, notas)
-     values ($1, $2, $3, $4, $5, $6)`,
-    [v.cliente_id, v.nombre, v.rol, v.lado, v.email, v.notas],
+    `insert into contacto (cliente_id, nombre, rol, lado, email, telefono, notas)
+     values ($1, $2, $3, $4, $5, $6, $7)`,
+    [v.cliente_id, v.nombre, v.rol, v.lado, v.email, v.telefono, v.notas],
   );
 
-  revalidatePath(`/clientes/${v.cliente_id}`);
+  revalidatePath(`/clientes/${v.cliente_id}`, "layout");
+  revalidatePath("/contactos");
 }
 
 export async function borrarContacto(datos: FormData) {

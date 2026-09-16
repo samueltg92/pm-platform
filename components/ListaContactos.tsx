@@ -48,6 +48,11 @@ export default function ListaContactos({
           ...persona.apariciones.map((a) => a.clienteNombre),
         ].join(" "),
       );
+      // Un número se busca por sus dígitos: "3001234" encuentra "+57 300 123 4567".
+      const digitos = texto.replace(/[^0-9]/g, "");
+      if (digitos.length >= 3 && persona.telefonos.some((t) => t.replace(/[^0-9]/g, "").includes(digitos))) {
+        return true;
+      }
       return heno.includes(buscado);
     });
   }, [personas, texto, lado]);
@@ -67,7 +72,7 @@ export default function ListaContactos({
           <input
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder={t("Buscar por nombre, rol, correo o proyecto")}
+            placeholder={t("Buscar por nombre, rol, correo, teléfono o proyecto")}
             className="campo"
             style={{ paddingLeft: "2rem" }}
           />
@@ -143,6 +148,19 @@ export default function ListaContactos({
                   </span>
                 )}
               </div>
+
+              {persona.telefonos.length > 0 && (
+                <p className="text-xs mt-1 num" style={{ color: "var(--texto-3)" }}>
+                  {persona.telefonos.map((tel, i) => (
+                    <span key={tel}>
+                      {i > 0 && " · "}
+                      <a href={`tel:${tel.replace(/[^0-9+]/g, "")}`} className="hover:underline">
+                        {tel}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              )}
 
               {persona.emails.length > 0 && (
                 <p className="text-xs mt-1" style={{ color: "var(--texto-3)" }}>

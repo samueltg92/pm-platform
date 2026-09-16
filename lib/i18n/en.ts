@@ -571,4 +571,8 @@ export const EN: Record<string, string> = {
   "vencidos": "overdue",
   "Cambiar la fase deja un evento en el timeline automáticamente.": "Changing the phase automatically leaves an entry in the timeline.",
   "Alta:": "Created:",
+  "Teléfono": "Phone",
+  "Con indicativo de país, por ejemplo +57 300 123 4567": "With country code, for example +57 300 123 4567",
+  "Buscar por nombre, rol, correo, teléfono o proyecto": "Search by name, role, email, phone or project",
+  "El teléfono solo admite + al inicio, dígitos, espacios, guiones, puntos y paréntesis, y entre 7 y 15 dígitos.": "The phone number only accepts + at the start, digits, spaces, dashes, dots and parentheses, and 7 to 15 digits.",
 };
