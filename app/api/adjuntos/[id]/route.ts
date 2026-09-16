@@ -8,7 +8,9 @@ export async function GET(
   _peticion: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await sesionActual())) {
+  const quien = await sesionActual();
+  if (quien?.rol === "contactos") return new Response("Sin acceso", { status: 403 });
+  if (!quien) {
     return new Response("No autorizado", { status: 401 });
   }
 

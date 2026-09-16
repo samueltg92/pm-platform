@@ -12,7 +12,9 @@ export type Resultado = {
 };
 
 export async function GET(peticion: Request) {
-  if (!(await sesionActual())) return new Response("No autorizado", { status: 401 });
+  const sesion = await sesionActual();
+  if (!sesion) return new Response("No autorizado", { status: 401 });
+  if (sesion.rol === "contactos") return new Response("Sin acceso", { status: 403 });
 
   const consulta = new URL(peticion.url).searchParams.get("q")?.trim() ?? "";
   if (consulta.length < 2) return Response.json({ resultados: [] });

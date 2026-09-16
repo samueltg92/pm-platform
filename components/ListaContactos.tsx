@@ -20,9 +20,12 @@ type Proyecto = { id: string; nombre: string; fase: Fase };
 export default function ListaContactos({
   personas,
   proyectos,
+  enlazarProyectos = true,
 }: {
   personas: Persona[];
   proyectos: Proyecto[];
+  /** El rol de solo contactos ve los proyectos pero no puede abrirlos. */
+  enlazarProyectos?: boolean;
 }) {
   const t = useT();
   const [texto, setTexto] = useState("");
@@ -189,16 +192,21 @@ export default function ListaContactos({
                   const color = proyecto
                     ? colorFase(proyecto.fase)
                     : { fondo: "var(--superficie-2)", texto: "var(--texto-2)", punto: "var(--texto-3)" };
-                  return (
+                  const estilo = { background: color.fondo, color: color.texto };
+                  return enlazarProyectos ? (
                     <Link
                       key={aparicion.id}
-                      href={`/clientes/${aparicion.clienteId}/contactos`}
+                      href={`/clientes/${aparicion.clienteId}/info`}
                       className="pastilla"
-                      style={{ background: color.fondo, color: color.texto }}
+                      style={estilo}
                       title={t("Ver los contactos de este proyecto")}
                     >
                       {aparicion.clienteNombre}
                     </Link>
+                  ) : (
+                    <span key={aparicion.id} className="pastilla" style={estilo}>
+                      {aparicion.clienteNombre}
+                    </span>
                   );
                 })}
               </div>

@@ -11,6 +11,7 @@ export async function GET() {
   // Exportar es leer, así que también vale para el rol lector. Lo que no vale
   // es hacerlo sin sesión: aquí sale todo de golpe.
   const sesion = await sesionActual();
+  if (sesion?.rol === "contactos") return new Response("Sin acceso", { status: 403 });
   if (!sesion) {
     return new Response("No autorizado", { status: 401 });
   }

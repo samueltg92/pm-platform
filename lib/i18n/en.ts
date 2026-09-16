@@ -583,4 +583,6 @@ export const EN: Record<string, string> = {
   "Buscar persona": "Search person",
   "Añadir seleccionados": "Add selected",
   "Elige al menos una persona": "Choose at least one person",
+  "Solo contactos": "Contacts only",
+  "Solo ve la agenda de contactos y en qué proyectos está cada persona. Nada más.": "Only sees the contact directory and which projects each person belongs to. Nothing else.",
 };

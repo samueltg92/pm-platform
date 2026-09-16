@@ -66,6 +66,7 @@ export default function Shell({
   salir,
   tema,
   idioma,
+  soloContactos = false,
   children,
 }: {
   clientes: ClienteSidebar[];
@@ -77,6 +78,8 @@ export default function Shell({
   salir: React.ReactNode;
   tema: Tema;
   idioma: Idioma;
+  /** Rol que solo ve la agenda: el menú no ofrece nada más. */
+  soloContactos?: boolean;
   children: React.ReactNode;
 }) {
   const t = useT();
@@ -134,11 +137,11 @@ export default function Shell({
               />
             </Modal>
           )}
-          <Buscador />
+          {!soloContactos && <Buscador />}
         </div>
 
         <nav className="px-2 space-y-0.5">
-          {SECCIONES.map((s) => (
+          {SECCIONES.filter((s) => !soloContactos || s.href === "/contactos").map((s) => (
             <Item
               key={s.href}
               href={s.href}
@@ -150,6 +153,8 @@ export default function Shell({
           ))}
         </nav>
 
+        {!soloContactos && (
+        <>
         <div className="mt-6 px-4 flex items-center justify-between">
           <span
             className="text-xs font-semibold uppercase tracking-wide"
@@ -212,6 +217,9 @@ export default function Shell({
             style={{ color: "var(--texto-3)" }}
           >{t("Ver todos")}</Link>
         </div>
+        </>
+        )}
+        {soloContactos && <div className="flex-1" />}
 
         <div className="shrink-0" style={{ borderTop: "1px solid var(--borde)" }}>
           <SelectorPreferencias tema={tema} idioma={idioma} />

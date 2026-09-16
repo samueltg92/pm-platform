@@ -7,6 +7,7 @@ import { Vacio } from "@/components/Seccion";
 import { crearTraductor } from "@/lib/i18n";
 import { leerIdioma } from "@/lib/preferencias";
 import { traducirFilas } from "@/lib/traduccion";
+import { sesionActual } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 /**
@@ -42,6 +43,7 @@ export default async function Contactos() {
         <ListaContactos
           personas={personas}
           proyectos={clientes.map((c) => ({ id: c.id, nombre: c.nombre, fase: c.fase }))}
+          enlazarProyectos={(await sesionActual())?.rol !== "contactos"}
         />
       )}
     </>

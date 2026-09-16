@@ -17,6 +17,7 @@ export default async function Perfil() {
       </p>
 
       <div className="space-y-4">
+        {sesion?.rol !== "contactos" && (
         <a
           href="/diagnostico"
           className="boton-suave inline-flex"
@@ -24,6 +25,7 @@ export default async function Perfil() {
         >
           {t("Diagnóstico de integraciones")}
         </a>
+        )}
         <FormularioPassword />
       </div>
     </div>
